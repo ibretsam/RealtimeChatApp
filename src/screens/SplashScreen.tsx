@@ -39,7 +39,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({navigation}) => {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'black',
+        backgroundColor: 'tomato',
       }}>
       <StatusBar barStyle="light-content" />
       <Animated.View style={{transform: [{translateY}]}}>
