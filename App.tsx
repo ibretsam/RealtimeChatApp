@@ -5,7 +5,7 @@
  * @format
  */
 
-import React from 'react';
+import React, {useState} from 'react';
 import {SafeAreaView, StatusBar, Text} from 'react-native';
 import SplashScreen from './src/screens/SplashScreen';
 import {NavigationContainer} from '@react-navigation/native';
@@ -15,6 +15,7 @@ import LoginScreen from './src/screens/Login';
 import MessagesScreen from './src/screens/Message';
 import SearchScreen from './src/screens/Search';
 import RegisterScreen from './src/screens/Register';
+import './src/core/font-awesome';
 
 export type RootStackParamList = {
   Splash: undefined;
@@ -28,16 +29,29 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function App(): React.JSX.Element {
+  const [initialized, setInitialized] = useState<boolean>(true);
+  const [authenticated, setAuthenticated] = useState<boolean>(true);
+
   return (
     <NavigationContainer>
       <StatusBar barStyle="dark-content" />
       <Stack.Navigator>
-        <Stack.Screen name="Splash" component={SplashScreen} />
-        <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Messages" component={MessagesScreen} />
-        <Stack.Screen name="Search" component={SearchScreen} />
-        <Stack.Screen name="Register" component={RegisterScreen} />
+        {!initialized ? (
+          <>
+            <Stack.Screen name="Splash" component={SplashScreen} />
+          </>
+        ) : !authenticated ? (
+          <>
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="Register" component={RegisterScreen} />
+          </>
+        ) : (
+          <>
+            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen name="Messages" component={MessagesScreen} />
+            <Stack.Screen name="Search" component={SearchScreen} />
+          </>
+        )}
       </Stack.Navigator>
     </NavigationContainer>
   );
