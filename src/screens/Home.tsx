@@ -9,7 +9,7 @@ import {RootStackParamList} from '../../App';
 import {useLayoutEffect} from 'react';
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
 import {IconProp} from '@fortawesome/fontawesome-svg-core';
-import {Image, Touchable, TouchableOpacity, View} from 'react-native';
+import {Image, TouchableOpacity, View} from 'react-native';
 
 type RootTabParamList = {
   Home: undefined;

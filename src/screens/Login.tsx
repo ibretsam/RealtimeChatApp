@@ -14,71 +14,50 @@ import {
 import {RootStackParamList} from '../../App';
 import {useLayoutEffect, useState} from 'react';
 import Title from '../common/Title';
-
-interface InputProps {
-  title: string;
-}
-
-const Input: React.FC<InputProps> = ({title}) => {
-  const [focused, setFocused] = useState<boolean>(false);
-
-  const borderColor = focused ? 'tomato' : 'gray';
-  const borderWidth = focused ? 1 : 0.8;
-  const textColor = focused ? 'tomato' : 'black';
-
-  return (
-    <View style={{width: '90%'}}>
-      <Text style={{fontSize: 16, marginBottom: 10, color: textColor}}>
-        {title}
-      </Text>
-      <TextInput
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        style={{
-          fontSize: 16,
-          height: 48,
-          borderRadius: 8,
-          marginBottom: 16,
-          paddingHorizontal: 16,
-          borderColor: borderColor,
-          borderWidth: borderWidth,
-        }}
-      />
-    </View>
-  );
-};
-
-interface ButtonProps {
-  text: string;
-  onPress: () => void;
-  style?: StyleProp<object>;
-}
-
-const Button: React.FC<ButtonProps> = ({text, style}) => {
-  return (
-    <TouchableOpacity
-      style={{
-        ...(style ?? {}),
-        width: '90%',
-        height: 48,
-        borderRadius: 8,
-        backgroundColor: 'tomato',
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}>
-      <Text style={{fontSize: 16, color: 'white'}}>{text}</Text>
-    </TouchableOpacity>
-  );
-};
+import Input from '../common/Input';
+import Button from '../common/Button';
 
 type LoginScreenProps = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
 const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
+  const [username, setUsername] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [usernameError, setUsernameError] = useState<string>('');
+  const [passwordError, setPasswordError] = useState<string>('');
+
   useLayoutEffect(() => {
     navigation.setOptions({
       headerShown: false,
     });
   }, []);
+
+  const validate = () => {
+    if (username === '') {
+      setUsernameError('Username is required');
+    } else {
+      setUsernameError('');
+    }
+
+    if (password === '') {
+      setPasswordError('Password is required');
+    } else {
+      setPasswordError('');
+    }
+
+    return username !== '' && password !== '';
+  };
+
+  const onLogin = () => {
+    console.log('Login');
+
+    if (validate()) {
+      console.log('Validated');
+      // TODO: Login
+    } else {
+      console.log('Invalid');
+      return;
+    }
+  };
 
   return (
     <SafeAreaView style={{flex: 1}}>
@@ -97,9 +76,24 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
               alignItems: 'center',
             }}>
             <Title text="Login" color="tomato" style={{marginBottom: 30}} />
-            <Input title="Username" />
-            <Input title="Password" />
-            <Button text="Login" onPress={() => {}} style={{marginTop: 15}} />
+            <Input
+              title="Username"
+              value={username}
+              setValue={setUsername}
+              error={usernameError}
+              setError={setUsernameError}
+              autoCapitalize="none"
+            />
+            <Input
+              title="Password"
+              value={password}
+              setValue={setPassword}
+              error={passwordError}
+              setError={setPasswordError}
+              isPassword={true}
+              autoCapitalize="none"
+            />
+            <Button text="Login" onPress={onLogin} style={{marginTop: 15}} />
             <Text style={{marginTop: 15, color: 'gray'}}>
               Don't have an account?{' '}
               <Text
