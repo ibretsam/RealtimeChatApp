@@ -9,7 +9,7 @@ import {RootStackParamList} from '../../App';
 import {useLayoutEffect} from 'react';
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
 import {IconProp} from '@fortawesome/fontawesome-svg-core';
-import {Touchable, TouchableOpacity} from 'react-native';
+import {Image, Touchable, TouchableOpacity, View} from 'react-native';
 
 type RootTabParamList = {
   Home: undefined;
@@ -32,6 +32,19 @@ const HomeScreen: React.FC<HomeScreenProps> = ({navigation}) => {
   return (
     <Tab.Navigator
       screenOptions={({route, navigation}) => ({
+        headerLeft: () => (
+          <View style={{marginLeft: 16}}>
+            <Image
+              source={require('../assets/profile.png')}
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: 14,
+                backgroundColor: '#e0e0e0',
+              }}
+            />
+          </View>
+        ),
         headerRight: () => (
           <TouchableOpacity>
             <FontAwesomeIcon
