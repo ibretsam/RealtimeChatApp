@@ -6,9 +6,9 @@
  */
 
 import React, {useState} from 'react';
-import {SafeAreaView, StatusBar, Text} from 'react-native';
+import {StatusBar} from 'react-native';
 import SplashScreen from './src/screens/SplashScreen';
-import {NavigationContainer} from '@react-navigation/native';
+import {DefaultTheme, NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import HomeScreen from './src/screens/Home';
 import LoginScreen from './src/screens/Login';
@@ -26,14 +26,22 @@ export type RootStackParamList = {
   Register: undefined;
 };
 
+const LightTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    background: 'white',
+  },
+};
+
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function App(): React.JSX.Element {
-  const [initialized, setInitialized] = useState<boolean>(true);
-  const [authenticated, setAuthenticated] = useState<boolean>(true);
+  const [initialized] = useState<boolean>(true);
+  const [authenticated] = useState<boolean>(false);
 
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={LightTheme}>
       <StatusBar barStyle="dark-content" />
       <Stack.Navigator>
         {!initialized ? (

@@ -1,14 +1,16 @@
-import {Text} from 'react-native';
+import {StyleProp, Text} from 'react-native';
 
 interface TitleProps {
   text: string;
   color?: string;
+  style?: StyleProp<object>;
 }
 
-const Title: React.FC<TitleProps> = ({text, color}) => {
+const Title: React.FC<TitleProps> = ({text, color, style}) => {
   return (
     <Text
       style={{
+        ...(style || {}),
         color: color,
         textAlign: 'center',
         fontSize: 48,
