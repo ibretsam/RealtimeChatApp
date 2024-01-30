@@ -16,6 +16,7 @@ import Input from '../common/Input';
 import Button from '../common/Button';
 import log from '../core/utils';
 import api from '../core/api';
+import useGlobal from '../core/global';
 
 type RegisterScreenProps = NativeStackScreenProps<
   RootStackParamList,
@@ -36,6 +37,8 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({navigation}) => {
   const [usernameError, setUsernameError] = useState<string>('');
   const [passwordError, setPasswordError] = useState<string>('');
   const [confirmError, setConfirmError] = useState<string>('');
+
+  const login = useGlobal(state => state.login);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -103,8 +106,6 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({navigation}) => {
     log('Register');
     if (validate()) {
       log('Validated');
-
-      // TODO: Register
       api({
         method: 'POST',
         url: '/api/chat/register/',
@@ -118,7 +119,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({navigation}) => {
       })
         .then(res => {
           log(res.data);
-          // navigation.navigate('Home');
+          login(res.data);
         })
         .catch(err => {
           log(err);

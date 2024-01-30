@@ -19,6 +19,7 @@ import Button from '../common/Button';
 import api from '../core/api';
 import {API_BASE_URL} from '@env';
 import log from '../core/utils';
+import useGlobal from '../core/global';
 
 type LoginScreenProps = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
@@ -27,6 +28,8 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
   const [password, setPassword] = useState<string>('');
   const [usernameError, setUsernameError] = useState<string>('');
   const [passwordError, setPasswordError] = useState<string>('');
+
+  const login = useGlobal(state => state.login);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -56,7 +59,6 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
     if (validate()) {
       log('Validated');
       log(API_BASE_URL);
-      // TODO: Login
       api({
         method: 'POST',
         url: '/api/chat/login/',
@@ -67,7 +69,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
       })
         .then(res => {
           log(res.data);
-          // navigation.navigate('Home');
+          login(res.data);
         })
         .catch(err => {
           log(err);

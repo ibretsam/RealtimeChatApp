@@ -16,6 +16,7 @@ import MessagesScreen from './src/screens/Message';
 import SearchScreen from './src/screens/Search';
 import RegisterScreen from './src/screens/Register';
 import './src/core/font-awesome';
+import useGlobal from './src/core/global';
 
 export type RootStackParamList = {
   Splash: undefined;
@@ -38,7 +39,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function App(): React.JSX.Element {
   const [initialized] = useState<boolean>(true);
-  const [authenticated] = useState<boolean>(false);
+  const authenticated = useGlobal(state => state.authenticated);
 
   return (
     <NavigationContainer theme={LightTheme}>
