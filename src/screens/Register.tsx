@@ -4,6 +4,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
+  ScrollView,
   Text,
   TouchableWithoutFeedback,
   View,
@@ -13,6 +14,8 @@ import {useLayoutEffect, useState} from 'react';
 import Title from '../common/Title';
 import Input from '../common/Input';
 import Button from '../common/Button';
+import log from '../core/utils';
+import api from '../core/api';
 
 type RegisterScreenProps = NativeStackScreenProps<
   RootStackParamList,
@@ -20,13 +23,15 @@ type RegisterScreenProps = NativeStackScreenProps<
 >;
 
 const RegisterScreen: React.FC<RegisterScreenProps> = ({navigation}) => {
-  const [name, setName] = useState<string>('');
+  const [firstname, setFirstname] = useState<string>('');
+  const [lastname, setLastname] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [confirm, setConfirm] = useState<string>('');
 
-  const [nameError, setNameError] = useState<string>('');
+  const [firstnameError, setFirstNameError] = useState<string>('');
+  const [lastnameError, setLastNameError] = useState<string>('');
   const [emailError, setEmailError] = useState<string>('');
   const [usernameError, setUsernameError] = useState<string>('');
   const [passwordError, setPasswordError] = useState<string>('');
@@ -39,10 +44,16 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({navigation}) => {
   }, []);
 
   const validate = () => {
-    if (name === '') {
-      setNameError('Name is required');
+    if (firstname === '') {
+      setFirstNameError('First name is required');
     } else {
-      setNameError('');
+      setFirstNameError('');
+    }
+
+    if (lastname === '') {
+      setLastNameError('Last name is required');
+    } else {
+      setLastNameError('');
     }
 
     if (email === '') {
@@ -74,7 +85,8 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({navigation}) => {
     }
 
     if (
-      name !== '' &&
+      firstname !== '' &&
+      lastname !== '' &&
       email !== '' &&
       username !== '' &&
       password !== '' &&
@@ -88,13 +100,32 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({navigation}) => {
   };
 
   const onRegister = () => {
-    console.log('Register');
+    log('Register');
     if (validate()) {
-      console.log('Validated');
+      log('Validated');
 
       // TODO: Register
+      api({
+        method: 'POST',
+        url: '/api/chat/register/',
+        data: {
+          username,
+          password,
+          email,
+          first_name: firstname,
+          last_name: lastname,
+        },
+      })
+        .then(res => {
+          log(res.data);
+          // navigation.navigate('Home');
+        })
+        .catch(err => {
+          log(err);
+          log(err.response.data);
+        });
     } else {
-      console.log('Not Validated');
+      log('Not Validated');
       return;
     }
   };
@@ -109,19 +140,27 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({navigation}) => {
         <TouchableWithoutFeedback
           onPress={() => Keyboard.dismiss()}
           style={{flex: 1}}>
-          <View
-            style={{
+          <ScrollView
+            contentContainerStyle={{
               flex: 1,
               justifyContent: 'center',
               alignItems: 'center',
             }}>
             <Title text="Register" color="tomato" style={{marginBottom: 30}} />
             <Input
-              title="Name"
-              value={name}
-              setValue={setName}
-              error={nameError}
-              setError={setNameError}
+              title="First Name"
+              value={firstname}
+              setValue={setFirstname}
+              error={firstnameError}
+              setError={setFirstNameError}
+              autoCapitalize="words"
+            />
+            <Input
+              title="Last Name"
+              value={lastname}
+              setValue={setLastname}
+              error={lastnameError}
+              setError={setLastNameError}
               autoCapitalize="words"
             />
             <Input
@@ -171,7 +210,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({navigation}) => {
                 Login
               </Text>
             </Text>
-          </View>
+          </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
     </SafeAreaView>
