@@ -14,7 +14,7 @@ import {useLayoutEffect, useState} from 'react';
 import Title from '../common/Title';
 import Input from '../common/Input';
 import Button from '../common/Button';
-import log from '../core/utils';
+import {log} from '../core/utils';
 import api from '../core/api';
 import useGlobal from '../core/global';
 
@@ -119,7 +119,10 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({navigation}) => {
       })
         .then(res => {
           log(res.data);
-          login(res.data);
+          const user = res.data.user;
+          const tokens = res.data.tokens;
+          const {access, refresh} = tokens;
+          login(access, refresh, user);
         })
         .catch(err => {
           log(err);

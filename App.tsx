@@ -5,7 +5,7 @@
  * @format
  */
 
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {StatusBar} from 'react-native';
 import SplashScreen from './src/screens/SplashScreen';
 import {DefaultTheme, NavigationContainer} from '@react-navigation/native';
@@ -38,8 +38,14 @@ const LightTheme = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function App(): React.JSX.Element {
-  const [initialized] = useState<boolean>(true);
+  const initialized = useGlobal(state => state.initialized);
   const authenticated = useGlobal(state => state.authenticated);
+
+  const init = useGlobal(state => state.init);
+
+  useEffect(() => {
+    init();
+  }, []);
 
   return (
     <NavigationContainer theme={LightTheme}>

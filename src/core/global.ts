@@ -1,22 +1,57 @@
 import {create} from 'zustand';
+import secure from './secure';
 
-type GlobalState = {
+type State = {
+  initialized: boolean;
+  init: () => void;
   authenticated: boolean;
-  auth: Authentication | null;
-  login: (auth: Authentication) => void;
+  user: User | null;
+  tokens: {
+    access: string | null;
+    refresh: string | null;
+  };
+  login: (access: string, refresh: string, user: User) => void;
   logout: () => void;
 };
 
-const useGlobal = create<GlobalState>(set => ({
+const useGlobal = create<State>(set => ({
+  //------------------//
+  // Initialization  //
+  //----------------//
+  initialized: false,
+  init: async () => {
+    const access = await secure.get('accessToken');
+    const refresh = await secure.get('refreshToken');
+    if (access && refresh) {
+      set({authenticated: true, tokens: {access, refresh}});
+    }
+    set({initialized: true});
+  },
+
   //------------------//
   // Authentication  //
   //----------------//
 
   authenticated: false,
-  auth: null,
+  tokens: {
+    access: null,
+    refresh: null,
+  },
+  user: null,
 
-  login: (auth: Authentication) => set({authenticated: true, auth}),
-  logout: () => set({authenticated: false, auth: null}),
+  login: (access: string, refresh: string, user: User) => {
+    secure.set('accessToken', access);
+    secure.set('refreshToken', refresh);
+    set({authenticated: true, tokens: {access, refresh}, user});
+  },
+  logout: () => {
+    secure.clear();
+    set({
+      authenticated: false,
+      tokens: {access: null, refresh: null},
+      user: null,
+    });
+  },
 }));
 
 export default useGlobal;

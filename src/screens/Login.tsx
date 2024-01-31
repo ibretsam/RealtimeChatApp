@@ -18,7 +18,7 @@ import Input from '../common/Input';
 import Button from '../common/Button';
 import api from '../core/api';
 import {API_BASE_URL} from '@env';
-import log from '../core/utils';
+import {log} from '../core/utils';
 import useGlobal from '../core/global';
 
 type LoginScreenProps = NativeStackScreenProps<RootStackParamList, 'Login'>;
@@ -69,7 +69,10 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
       })
         .then(res => {
           log(res.data);
-          login(res.data);
+          const user = res.data.user;
+          const tokens = res.data.tokens;
+          const {access, refresh} = tokens;
+          login(access, refresh, user);
         })
         .catch(err => {
           log(err);
