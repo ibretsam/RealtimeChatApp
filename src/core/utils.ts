@@ -8,4 +8,14 @@ const log = (...args: any[]) => {
   });
 };
 
-export default log;
+const logError = (...args: any[]) => {
+  Array.from(args).forEach(arg => {
+    if (typeof arg === 'object') {
+      console.error(JSON.stringify(arg, null, 2));
+    } else {
+      console.error(arg);
+    }
+  });
+};
+
+export {log, logError};
