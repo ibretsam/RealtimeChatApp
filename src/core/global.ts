@@ -3,7 +3,7 @@ import secure from './secure';
 
 type State = {
   initialized: boolean;
-  init: () => void;
+  init: () => Promise<void>;
   authenticated: boolean;
   user: User | null;
   tokens: {
@@ -22,8 +22,13 @@ const useGlobal = create<State>(set => ({
   init: async () => {
     const access = await secure.get('accessToken');
     const refresh = await secure.get('refreshToken');
-    if (access && refresh) {
-      set({authenticated: true, tokens: {access, refresh}});
+    const user = await secure.get('user');
+    if (access && refresh && user) {
+      set({
+        authenticated: true,
+        tokens: {access, refresh},
+        user: JSON.parse(user),
+      });
     }
     set({initialized: true});
   },
@@ -42,6 +47,7 @@ const useGlobal = create<State>(set => ({
   login: (access: string, refresh: string, user: User) => {
     secure.set('accessToken', access);
     secure.set('refreshToken', refresh);
+    secure.set('user', JSON.stringify(user));
     set({authenticated: true, tokens: {access, refresh}, user});
   },
   logout: () => {

@@ -12,7 +12,7 @@ const set = async (key: string, value: string) => {
 const get = async (key: string) => {
   try {
     const value = await EncryptedStorage.getItem(key);
-    return value ? value : null;
+    return value ?? null;
   } catch (error) {
     logError('Secure get error: ' + error);
   }
