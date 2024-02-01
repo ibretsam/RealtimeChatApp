@@ -17,6 +17,7 @@ import SearchScreen from './src/screens/Search';
 import RegisterScreen from './src/screens/Register';
 import './src/core/font-awesome';
 import useGlobal from './src/core/global';
+import {ActionSheetProvider} from '@expo/react-native-action-sheet';
 
 export type RootStackParamList = {
   Splash: undefined;
@@ -48,27 +49,29 @@ function App(): React.JSX.Element {
   }, []);
 
   return (
-    <NavigationContainer theme={LightTheme}>
-      <StatusBar barStyle="dark-content" />
-      <Stack.Navigator>
-        {!initialized ? (
-          <>
-            <Stack.Screen name="Splash" component={SplashScreen} />
-          </>
-        ) : !authenticated ? (
-          <>
-            <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="Register" component={RegisterScreen} />
-          </>
-        ) : (
-          <>
-            <Stack.Screen name="Home" component={HomeScreen} />
-            <Stack.Screen name="Messages" component={MessagesScreen} />
-            <Stack.Screen name="Search" component={SearchScreen} />
-          </>
-        )}
-      </Stack.Navigator>
-    </NavigationContainer>
+    <ActionSheetProvider>
+      <NavigationContainer theme={LightTheme}>
+        <StatusBar barStyle="dark-content" />
+        <Stack.Navigator>
+          {!initialized ? (
+            <>
+              <Stack.Screen name="Splash" component={SplashScreen} />
+            </>
+          ) : !authenticated ? (
+            <>
+              <Stack.Screen name="Login" component={LoginScreen} />
+              <Stack.Screen name="Register" component={RegisterScreen} />
+            </>
+          ) : (
+            <>
+              <Stack.Screen name="Home" component={HomeScreen} />
+              <Stack.Screen name="Messages" component={MessagesScreen} />
+              <Stack.Screen name="Search" component={SearchScreen} />
+            </>
+          )}
+        </Stack.Navigator>
+      </NavigationContainer>
+    </ActionSheetProvider>
   );
 }
 
