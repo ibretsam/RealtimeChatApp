@@ -29,6 +29,12 @@ const useGlobal = create<State>(set => ({
         tokens: {access, refresh},
         user: JSON.parse(user),
       });
+    } else {
+      set({
+        authenticated: false,
+        tokens: {access: null, refresh: null},
+        user: null,
+      });
     }
     set({initialized: true});
   },
