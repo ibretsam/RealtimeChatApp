@@ -6,10 +6,13 @@ import RequestsScreen from './Requests';
 import FriendsScreen from './Friends';
 import ProfileScreen from './Profile';
 import {RootStackParamList} from '../../App';
-import {useLayoutEffect} from 'react';
+import {useEffect, useLayoutEffect} from 'react';
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
 import {IconProp} from '@fortawesome/fontawesome-svg-core';
 import {Image, TouchableOpacity, View} from 'react-native';
+import useGlobal from '../core/global';
+import {thumbnail} from '../core/utils';
+import Avatar from '../common/Avatar';
 
 type RootTabParamList = {
   Home: undefined;
@@ -23,10 +26,22 @@ const Tab = createBottomTabNavigator<RootTabParamList>();
 type HomeScreenProps = BottomTabScreenProps<RootStackParamList, 'Home'>;
 
 const HomeScreen: React.FC<HomeScreenProps> = ({navigation}) => {
+  const user = useGlobal(state => state.user);
+
+  const socketConnect = useGlobal(state => state.socketConnect);
+  const socketDisconnect = useGlobal(state => state.socketDisconnect);
+
   useLayoutEffect(() => {
     navigation.setOptions({
       headerShown: false,
     });
+  }, []);
+
+  useEffect(() => {
+    socketConnect();
+    return () => {
+      socketDisconnect();
+    };
   }, []);
 
   return (
@@ -34,15 +49,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({navigation}) => {
       screenOptions={({route, navigation}) => ({
         headerLeft: () => (
           <View style={{marginLeft: 16}}>
-            <Image
-              source={require('../assets/profile.png')}
-              style={{
-                width: 28,
-                height: 28,
-                borderRadius: 14,
-                backgroundColor: '#e0e0e0',
-              }}
-            />
+            <Avatar src={user?.thumbnail} size={28} />
           </View>
         ),
         headerRight: () => (

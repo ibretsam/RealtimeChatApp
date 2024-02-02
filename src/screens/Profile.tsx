@@ -3,7 +3,8 @@ import {Image, Text, TouchableOpacity, View} from 'react-native';
 import useGlobal from '../core/global';
 import {useActionSheet} from '@expo/react-native-action-sheet';
 import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
-import {log} from '../core/utils';
+import {log, thumbnail} from '../core/utils';
+import Avatar from '../common/Avatar';
 
 const ProfileLogout: React.FC = () => {
   const logout = useGlobal(state => state.logout);
@@ -32,6 +33,9 @@ const ProfileLogout: React.FC = () => {
 };
 
 const ProfilePicture: React.FC = () => {
+  const user = useGlobal(state => state.user);
+  const uploadThumbnail = useGlobal(state => state.uploadThumbnail);
+
   const {showActionSheetWithOptions} = useActionSheet();
 
   const showActionSheet = () => {
@@ -53,6 +57,11 @@ const ProfilePicture: React.FC = () => {
                 },
                 response => {
                   log(response);
+                  if (response.didCancel) return;
+                  const file = response.assets?.[0];
+                  if (file) {
+                    uploadThumbnail(file);
+                  }
                 },
               );
               break;
@@ -61,10 +70,15 @@ const ProfilePicture: React.FC = () => {
               launchImageLibrary(
                 {
                   mediaType: 'photo',
-                  includeBase64: false,
+                  includeBase64: true,
                 },
                 response => {
                   log(response);
+                  if (response.didCancel) return;
+                  const file = response.assets?.[0];
+                  if (file) {
+                    uploadThumbnail(file);
+                  }
                 },
               );
               break;
@@ -78,15 +92,7 @@ const ProfilePicture: React.FC = () => {
 
   return (
     <TouchableOpacity style={{marginBottom: 20}}>
-      <Image
-        source={require('../assets/profile.png')}
-        style={{
-          width: 180,
-          height: 180,
-          borderRadius: 90,
-          backgroundColor: '#e0e0e0',
-        }}
-      />
+      <Avatar src={user?.thumbnail} size={180} />
       <View>
         <TouchableOpacity
           onPress={showActionSheet}

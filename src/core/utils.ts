@@ -1,3 +1,6 @@
+import ProfilePicture from '../assets/profile.png';
+import {URL} from './api';
+
 const log = (...args: any[]) => {
   Array.from(args).forEach(arg => {
     if (typeof arg === 'object') {
@@ -18,4 +21,10 @@ const logError = (...args: any[]) => {
   });
 };
 
-export {log, logError};
+const thumbnail = (url: string | undefined) => {
+  if (!url) return ProfilePicture;
+  const imageUri = 'http://' + URL + url;
+  return {uri: imageUri};
+};
+
+export {log, logError, thumbnail};
