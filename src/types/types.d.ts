@@ -3,7 +3,7 @@ declare interface User {
   username: string;
   name: string;
   email: string;
-  thumbnail: string;
+  thumbnail: string | undefined;
 }
 
 declare interface Tokens {

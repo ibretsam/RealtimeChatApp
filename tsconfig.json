@@ -4,5 +4,6 @@
     "jsx": "react-native",
     "declaration": true,
     "declarationDir": "./src/types",
-  }
+  },
+  "include": ["src"],
 }
