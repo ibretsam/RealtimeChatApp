@@ -22,6 +22,7 @@ type State = {
   uploadThumbnail: (file: Asset) => void;
   searchList: SearchUser[] | null;
   searchUser: (query: string) => void;
+  connect: (username: string) => void;
 };
 
 const useGlobal = create<State>((set, get) => ({
@@ -209,6 +210,15 @@ const useGlobal = create<State>((set, get) => ({
     } else {
       set(state => ({searchList: null}));
     }
+  },
+
+  //------------------------//
+  //  Send connect request //
+  //----------------------//
+
+  connect: (username: string) => {
+    const socket = get().socket;
+    socket?.send(JSON.stringify({source: 'request-connect', username}));
   },
 }));
 export default useGlobal;

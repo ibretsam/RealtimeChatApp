@@ -38,6 +38,8 @@ const SearchButton: React.FC<SearchRowProps> = ({user}) => {
   }
   const data: SearchButtonData = {};
 
+  const connectRequest = useGlobal(state => state.connect);
+
   switch (user.status) {
     case 'not-connected':
       data.text = 'Add';
@@ -45,6 +47,7 @@ const SearchButton: React.FC<SearchRowProps> = ({user}) => {
       data.disabled = false;
       data.onPress = () => {
         console.log('Add');
+        connectRequest(user.username);
       };
       break;
     case 'pending-me':
@@ -148,37 +151,6 @@ const SearchScreen: React.FC<SearchScreenProps> = ({navigation}) => {
   useEffect(() => {
     searchUser(query);
   }, [query]);
-
-  // const searchList = [
-  //   {
-  //     id: 1,
-  //     name: 'John Doe',
-  //     thumbnail: 'https://i.pravatar.cc/300',
-  //     username: 'johndoe',
-  //     status: 'pending-them',
-  //   },
-  //   {
-  //     id: 2,
-  //     name: 'Jane Doe',
-  //     thumbnail: 'https://i.pravatar.cc/300',
-  //     username: 'janedoe',
-  //     status: 'pending-me',
-  //   },
-  //   {
-  //     id: 3,
-  //     name: 'John Smith',
-  //     thumbnail: 'https://i.pravatar.cc/300',
-  //     username: 'johnsmith',
-  //     status: 'connected',
-  //   },
-  //   {
-  //     id: 4,
-  //     name: 'Jane Smith',
-  //     thumbnail: 'https://i.pravatar.cc/300',
-  //     username: 'janesmith',
-  //     status: 'not-connected',
-  //   },
-  // ];
 
   useLayoutEffect(() => {
     navigation.setOptions({
