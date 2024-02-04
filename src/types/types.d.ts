@@ -6,6 +6,14 @@ declare interface User {
   thumbnail: string | undefined;
 }
 
+declare interface SearchUser {
+  id: number;
+  name: string;
+  thumbnail: string;
+  username: string;
+  status: string;
+}
+
 declare interface Tokens {
   accessToken: string;
   refreshToken: string;

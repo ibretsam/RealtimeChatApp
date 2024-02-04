@@ -20,27 +20,8 @@ type State = {
   socketConnect: () => void;
   socketDisconnect: () => void;
   uploadThumbnail: (file: Asset) => void;
-};
-
-//----------------------------------//
-// Socket receive message handler  //
-//--------------------------------//
-
-const responseThumbnail = (
-  set: (
-    partial:
-      | State
-      | Partial<State>
-      | ((state: State) => State | Partial<State>),
-    replace?: boolean | undefined,
-  ) => void,
-  get: () => State,
-  data: User,
-) => {
-  log('Thumbnail response: ', data);
-  set(state => ({
-    user: data,
-  }));
+  searchList: SearchUser[] | null;
+  searchUser: (query: string) => void;
 };
 
 const useGlobal = create<State>((set, get) => ({
@@ -127,10 +108,46 @@ const useGlobal = create<State>((set, get) => ({
             replace?: boolean | undefined,
           ) => void,
           get: () => State,
-          data: User,
+          data: User | SearchUser[],
         ) => void;
       } = {
-        thumbnail: responseThumbnail,
+        thumbnail: (
+          set: (
+            partial:
+              | State
+              | Partial<State>
+              | ((state: State) => State | Partial<State>),
+            replace?: boolean | undefined,
+          ) => void,
+          get: () => State,
+          data: User | SearchUser[],
+        ) => {
+          log('Thumbnail response: ', data);
+          // Thumbnail response logic
+          if (Array.isArray(data)) {
+            throw new Error('Invalid data format');
+          }
+          set(state => ({user: data as User}));
+          // Update user in secure storage
+          secure.set('user', JSON.stringify(data));
+        },
+        search: (
+          set: (
+            partial:
+              | State
+              | Partial<State>
+              | ((state: State) => State | Partial<State>),
+            replace?: boolean | undefined,
+          ) => void,
+          get: () => State,
+          data: User | SearchUser[],
+        ) => {
+          // Search response logic
+          if (!Array.isArray(data)) {
+            throw new Error('Invalid data format');
+          }
+          set(state => ({searchList: data as SearchUser[]}));
+        },
       };
 
       const response = responses[data.source];
@@ -156,6 +173,11 @@ const useGlobal = create<State>((set, get) => ({
 
   socketDisconnect: () => {
     log('Disconnecting socket');
+    const socket = get().socket;
+    if (socket) {
+      socket.close();
+    }
+    set(state => ({socket: null}));
   },
 
   //--------------//
@@ -172,6 +194,21 @@ const useGlobal = create<State>((set, get) => ({
       }),
     );
   },
-}));
 
+  //---------------//
+  //    Search    //
+  //-------------//
+
+  searchList: null,
+
+  searchUser: (query: string) => {
+    if (query) {
+      log('Searching for: ', query);
+      const socket = get().socket;
+      socket?.send(JSON.stringify({source: 'search', query}));
+    } else {
+      set(state => ({searchList: null}));
+    }
+  },
+}));
 export default useGlobal;

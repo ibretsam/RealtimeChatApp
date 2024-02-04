@@ -23,7 +23,13 @@ const logError = (...args: any[]) => {
 
 const thumbnail = (url: string | undefined) => {
   if (!url) return ProfilePicture;
-  const imageUri = 'http://' + URL + url;
+
+  let imageUri = '';
+  if (url.startsWith('http')) {
+    imageUri = url;
+  } else {
+    imageUri = 'http://' + URL + url;
+  }
   return {uri: imageUri};
 };
 

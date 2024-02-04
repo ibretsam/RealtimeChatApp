@@ -11,7 +11,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
 import {IconProp} from '@fortawesome/fontawesome-svg-core';
 import {Image, TouchableOpacity, View} from 'react-native';
 import useGlobal from '../core/global';
-import {thumbnail} from '../core/utils';
+import {log, thumbnail} from '../core/utils';
 import Avatar from '../common/Avatar';
 
 type RootTabParamList = {
@@ -44,6 +44,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({navigation}) => {
     };
   }, []);
 
+  const onSearch = () => {
+    navigation.navigate('Search');
+  };
+
   return (
     <Tab.Navigator
       screenOptions={({route, navigation}) => ({
@@ -53,7 +57,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({navigation}) => {
           </View>
         ),
         headerRight: () => (
-          <TouchableOpacity>
+          <TouchableOpacity onPress={onSearch}>
             <FontAwesomeIcon
               style={{marginRight: 16}}
               icon="magnifying-glass"
