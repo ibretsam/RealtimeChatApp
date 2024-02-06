@@ -23,3 +23,10 @@ declare interface Authentication {
   user: User | null;
   tokens: Tokens | null;
 }
+
+declare interface Connection {
+  id: number;
+  sender: User;
+  receiver: User;
+  accepted?: boolean;
+}
