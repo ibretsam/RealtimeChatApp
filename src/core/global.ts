@@ -23,6 +23,8 @@ type State = {
   searchList: SearchUser[] | null;
   searchUser: (query: string) => void;
   connect: (username: string) => void;
+  accept: (username: string) => void;
+  requestList: Connection[] | null;
 };
 
 const useGlobal = create<State>((set, get) => ({
@@ -93,36 +95,32 @@ const useGlobal = create<State>((set, get) => ({
 
     socket.onopen = () => {
       log('Socket connected');
+
+      socket.send(JSON.stringify({source: 'request-list'}));
     };
 
     socket.onmessage = e => {
       const data = JSON.parse(e.data);
       log('Data: ', data);
 
+      type SetState = (
+        partial:
+          | State
+          | Partial<State>
+          | ((state: State) => State | Partial<State>),
+        replace?: boolean | undefined,
+      ) => void;
+
+      type ResponseData = User | SearchUser[] | Connection;
+
       const responses: {
         [key: string]: (
-          set: (
-            partial:
-              | State
-              | Partial<State>
-              | ((state: State) => State | Partial<State>),
-            replace?: boolean | undefined,
-          ) => void,
+          set: SetState,
           get: () => State,
-          data: User | SearchUser[],
+          data: ResponseData,
         ) => void;
       } = {
-        thumbnail: (
-          set: (
-            partial:
-              | State
-              | Partial<State>
-              | ((state: State) => State | Partial<State>),
-            replace?: boolean | undefined,
-          ) => void,
-          get: () => State,
-          data: User | SearchUser[],
-        ) => {
+        thumbnail: (set: SetState, get: () => State, data: ResponseData) => {
           log('Thumbnail response: ', data);
           // Thumbnail response logic
           if (Array.isArray(data)) {
@@ -132,54 +130,86 @@ const useGlobal = create<State>((set, get) => ({
           // Update user in secure storage
           secure.set('user', JSON.stringify(data));
         },
-        search: (
-          set: (
-            partial:
-              | State
-              | Partial<State>
-              | ((state: State) => State | Partial<State>),
-            replace?: boolean | undefined,
-          ) => void,
-          get: () => State,
-          data: User | SearchUser[],
-        ) => {
+        search: (set: SetState, get: () => State, data: ResponseData) => {
           // Search response logic
           if (!Array.isArray(data)) {
             throw new Error('Invalid data format');
           }
-          set(state => ({searchList: data as SearchUser[]}));
+          set(state => ({searchList: data}));
         },
         'request-connect': (
-          set: (
-            partial:
-              | State
-              | Partial<State>
-              | ((state: State) => State | Partial<State>),
-            replace?: boolean | undefined,
-          ) => void,
+          set: SetState,
           get: () => State,
-          data: User | SearchUser[],
+          data: ResponseData,
         ) => {
           log('Request connect response: ', data);
           const user = get().user;
 
-          log('Sender: ' + data.sender.username);
-          log('Receiver: ' + data.receiver.username);
-          log('User: ' + user?.username);
-          log(user?.username == data.sender.username);
+          if ('sender' in data && 'receiver' in data) {
+            if (user?.username == data.sender.username) {
+              log('Sender is the current user');
+              const searchList = [...get().searchList!];
+              log('Search list: ', searchList);
+              const index = searchList.findIndex(
+                user => user.username === data.receiver.username,
+              );
+              log('Index: ' + index);
+              if (index >= 0) {
+                searchList[index].status = 'pending-me';
+                set(state => ({searchList}));
+                log('Search list updated: ', searchList);
+              }
+            } else {
+              const requestList = [...get().requestList!];
+              const index = requestList.findIndex(
+                user => user.sender.username === data.sender.username,
+              );
+              if (index < 0) {
+                requestList.unshift(data);
+                set(state => ({requestList}));
+              }
+            }
+          }
+        },
+        'request-list': (
+          set: SetState,
+          get: () => State,
+          data: ResponseData,
+        ) => {
+          log('Request list response: ', data);
+          if (!Array.isArray(data)) {
+            throw new Error('Invalid data format');
+          }
+          set(state => ({requestList: data as unknown as Connection[]}));
+        },
+        'request-accept': (
+          set: SetState,
+          get: () => State,
+          data: ResponseData,
+        ) => {
+          log('Request accept response: ', data);
+          const user = get().user;
+          if ('receiver' in data && user?.username == data.receiver.username) {
+            log('Receiver is the current user');
+            if (data.accepted) {
+              const requestList = [...get().requestList!];
+              const index = requestList.findIndex(
+                user => user.sender.username === data.sender.username,
+              );
+              if (index >= 0) {
+                requestList.splice(index, 1);
+                set(state => ({requestList}));
+              }
 
-          if (user?.username == data.sender.username) {
-            log('Sender is the current user');
-            const searchList = [...get().searchList!];
-            log('Search list: ', searchList);
-            const index = searchList.findIndex(
-              user => user.username === data.receiver.username,
-            );
-            log('Index: ' + index);
-            if (index >= 0) {
-              searchList[index].status = 'pending-me';
-              set(state => ({searchList}));
-              log('Search list updated: ', searchList);
+              // Update search list
+              const searchList = [...get().searchList!];
+              const index2 = searchList.findIndex(
+                user => user.username === data.sender.username,
+              );
+              if (index2 >= 0) {
+                searchList[index2].status = 'connected';
+                set(state => ({searchList}));
+              }
             }
           }
         },
@@ -250,9 +280,16 @@ const useGlobal = create<State>((set, get) => ({
   //  Send connect request //
   //----------------------//
 
+  requestList: null,
+
   connect: (username: string) => {
     const socket = get().socket;
     socket?.send(JSON.stringify({source: 'request-connect', username}));
+  },
+
+  accept: (username: string) => {
+    const socket = get().socket;
+    socket?.send(JSON.stringify({source: 'request-accept', username}));
   },
 }));
 export default useGlobal;
