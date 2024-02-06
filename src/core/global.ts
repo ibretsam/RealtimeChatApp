@@ -149,6 +149,40 @@ const useGlobal = create<State>((set, get) => ({
           }
           set(state => ({searchList: data as SearchUser[]}));
         },
+        'request-connect': (
+          set: (
+            partial:
+              | State
+              | Partial<State>
+              | ((state: State) => State | Partial<State>),
+            replace?: boolean | undefined,
+          ) => void,
+          get: () => State,
+          data: User | SearchUser[],
+        ) => {
+          log('Request connect response: ', data);
+          const user = get().user;
+
+          log('Sender: ' + data.sender.username);
+          log('Receiver: ' + data.receiver.username);
+          log('User: ' + user?.username);
+          log(user?.username == data.sender.username);
+
+          if (user?.username == data.sender.username) {
+            log('Sender is the current user');
+            const searchList = [...get().searchList!];
+            log('Search list: ', searchList);
+            const index = searchList.findIndex(
+              user => user.username === data.receiver.username,
+            );
+            log('Index: ' + index);
+            if (index >= 0) {
+              searchList[index].status = 'pending-me';
+              set(state => ({searchList}));
+              log('Search list updated: ', searchList);
+            }
+          }
+        },
       };
 
       const response = responses[data.source];
