@@ -14,6 +14,7 @@ import Empty from '../common/Empty';
 import Avatar from '../common/Avatar';
 import {IconProp} from '@fortawesome/fontawesome-svg-core';
 import useGlobal from '../core/global';
+import Cell from '../common/Cell';
 
 interface SearchRowProps {
   user: SearchUser;
@@ -39,6 +40,7 @@ const SearchButton: React.FC<SearchRowProps> = ({user}) => {
   const data: SearchButtonData = {};
 
   const connectRequest = useGlobal(state => state.connect);
+  const acceptRequest = useGlobal(state => state.accept);
 
   switch (user.status) {
     case 'not-connected':
@@ -61,6 +63,7 @@ const SearchButton: React.FC<SearchRowProps> = ({user}) => {
       data.disabled = false;
       data.onPress = () => {
         console.log('Accept');
+        acceptRequest(user.username);
       };
       break;
     default:
@@ -101,15 +104,7 @@ const SearchButton: React.FC<SearchRowProps> = ({user}) => {
 
 const SearchRow: React.FC<SearchRowProps> = ({user}) => {
   return (
-    <View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 16,
-        borderBottomWidth: 1,
-        borderColor: '#f0f0f0',
-        justifyContent: 'space-between',
-      }}>
+    <Cell>
       <View
         style={{
           flexDirection: 'row',
@@ -135,7 +130,7 @@ const SearchRow: React.FC<SearchRowProps> = ({user}) => {
       </View>
 
       <SearchButton user={user} />
-    </View>
+    </Cell>
   );
 };
 
