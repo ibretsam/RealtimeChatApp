@@ -29,4 +29,27 @@ declare interface Connection {
   sender: User;
   receiver: User;
   accepted?: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+declare interface MessagePreview {
+  id: Connection.id;
+  friend: User;
+  preview: string;
+  updated_at: Connection.updated_at;
+}
+
+declare interface Message {
+  id: number;
+  connection: Connection;
+  sender: User;
+  content: string;
+  created_at: string;
+  is_my_message: boolean;
+}
+
+declare interface MessageData {
+  messages: Message | Message[];
+  user: User;
 }

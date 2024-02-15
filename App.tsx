@@ -23,9 +23,10 @@ export type RootStackParamList = {
   Splash: undefined;
   Home: undefined;
   Login: undefined;
-  Messages: undefined;
+  Message: {connection: MessagePreview};
   Search: undefined;
   Register: undefined;
+  Friends: undefined;
 };
 
 const LightTheme = {
@@ -65,7 +66,7 @@ function App(): React.JSX.Element {
           ) : (
             <>
               <Stack.Screen name="Home" component={HomeScreen} />
-              <Stack.Screen name="Messages" component={MessagesScreen} />
+              <Stack.Screen name="Message" component={MessagesScreen} />
               <Stack.Screen name="Search" component={SearchScreen} />
             </>
           )}
