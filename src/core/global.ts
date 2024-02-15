@@ -25,6 +25,11 @@ type State = {
   connect: (username: string) => void;
   accept: (username: string) => void;
   requestList: Connection[] | null;
+  friendList: MessagePreview[] | null;
+  messageSend: (message: string, connection: MessagePreview) => void;
+  messagesList: Message[] | null;
+  messageUser: User | null;
+  messageList: (connection: MessagePreview, page?: number) => void;
 };
 
 const useGlobal = create<State>((set, get) => ({
@@ -97,6 +102,7 @@ const useGlobal = create<State>((set, get) => ({
       log('Socket connected');
 
       socket.send(JSON.stringify({source: 'request-list'}));
+      socket.send(JSON.stringify({source: 'friend-list'}));
     };
 
     socket.onmessage = e => {
@@ -111,7 +117,14 @@ const useGlobal = create<State>((set, get) => ({
         replace?: boolean | undefined,
       ) => void;
 
-      type ResponseData = User | SearchUser[] | Connection;
+      type ResponseData =
+        | User
+        | SearchUser[]
+        | Connection
+        | Message[]
+        | Message
+        | MessageData
+        | MessagePreview;
 
       const responses: {
         [key: string]: (
@@ -135,7 +148,7 @@ const useGlobal = create<State>((set, get) => ({
           if (!Array.isArray(data)) {
             throw new Error('Invalid data format');
           }
-          set(state => ({searchList: data}));
+          set((state: State) => ({searchList: data as SearchUser[]}));
         },
         'request-connect': (
           set: SetState,
@@ -202,16 +215,86 @@ const useGlobal = create<State>((set, get) => ({
               }
 
               // Update search list
-              const searchList = [...get().searchList!];
-              const index2 = searchList.findIndex(
-                user => user.username === data.sender.username,
-              );
-              if (index2 >= 0) {
-                searchList[index2].status = 'connected';
-                set(state => ({searchList}));
+              if (get().searchList) {
+                const searchList = [...get().searchList!];
+                const index2 = searchList.findIndex(
+                  user => user.username === data.sender.username,
+                );
+                if (index2 >= 0) {
+                  searchList[index2].status = 'connected';
+                  set(state => ({searchList}));
+                }
               }
             }
           }
+        },
+        'friend-list': (
+          set: SetState,
+          get: () => State,
+          data: ResponseData,
+        ) => {
+          log('Friend list response: ', data);
+          if (!Array.isArray(data)) {
+            throw new Error('Invalid data format');
+          }
+          set(state => ({friendList: data as unknown as MessagePreview[]}));
+        },
+        'friend-new': (set: SetState, get: () => State, data: ResponseData) => {
+          data = data as MessagePreview;
+          log('New friend response: ', data);
+          const friendList = [data, ...get().friendList!];
+          set(state => ({friendList: friendList}));
+        },
+        'message-list': (
+          set: SetState,
+          get: () => State,
+          data: ResponseData,
+        ) => {
+          data = data as MessageData;
+          const messages = data.messages as Message[];
+          const user = data.user;
+          log('Message list response: ', data);
+          if (!Array.isArray(data.messages)) {
+            throw new Error('Invalid data format');
+          }
+          set(state => ({
+            messagesList: [...get().messagesList!, ...messages],
+            messageUser: user,
+          }));
+        },
+        'message-send': (
+          set: SetState,
+          get: () => State,
+          data: ResponseData,
+        ) => {
+          log('Message send response: ', data);
+          data = data as MessageData;
+          const message = data.messages as Message;
+          const sender = data.user;
+
+          const friendList = [...get().friendList!];
+          const index = friendList.findIndex(
+            item => item.friend.username === sender.username,
+          );
+          log('Friend list: ', friendList);
+          log('Index: ' + index);
+
+          if (index >= 0) {
+            const friend = friendList[index];
+            friend.preview = message.content;
+            friend.updated_at = message.created_at;
+            friendList.splice(index, 1);
+            friendList.unshift(friend);
+
+            set(state => ({friendList}));
+          }
+
+          // if (sender.username !== get().messageUser?.username) {
+          //   return;
+          // }
+
+          const messagesList = [message, ...get().messagesList!];
+          set(state => ({messagesList}));
         },
       };
 
@@ -290,6 +373,50 @@ const useGlobal = create<State>((set, get) => ({
   accept: (username: string) => {
     const socket = get().socket;
     socket?.send(JSON.stringify({source: 'request-accept', username}));
+  },
+
+  //----------------//
+  //  Friend List  //
+  //--------------//
+  friendList: [],
+
+  //----------------//
+  //  Message Send  //
+  //----------------//
+  messageSend: (message: string, connection: MessagePreview) => {
+    const socket = get().socket;
+    socket?.send(
+      JSON.stringify({
+        source: 'message-send',
+        message_type: 'text',
+        message,
+        connectionId: connection.id,
+        senderId: get().user?.id,
+      }),
+    );
+  },
+
+  //----------------//
+  //  Message List  //
+  //----------------//
+  messagesList: [],
+  messageUser: null,
+  messageList: (connection: MessagePreview, page: number = 0) => {
+    if (page === 0) {
+      set({
+        messagesList: [],
+        messageUser: null,
+      });
+    }
+
+    const socket = get().socket;
+    socket?.send(
+      JSON.stringify({
+        source: 'message-list',
+        connectionId: connection.id,
+        page,
+      }),
+    );
   },
 }));
 export default useGlobal;
