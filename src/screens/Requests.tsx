@@ -9,6 +9,7 @@ import useGlobal from '../core/global';
 import Empty from '../common/Empty';
 import Cell from '../common/Cell';
 import Avatar from '../common/Avatar';
+import moment from 'moment';
 
 const RequestRowButton: React.FC<{item: Connection}> = ({item}) => {
   const connectRequest = useGlobal(state => state.connect);
@@ -50,20 +51,29 @@ const RequestRow: React.FC<{item: Connection}> = ({item}) => {
     <Cell>
       <View style={{flexDirection: 'row', alignItems: 'center'}}>
         <Avatar src={item.sender.thumbnail} size={76} />
-        <View style={{marginLeft: 10}}>
-          <Text style={{fontWeight: 'bold', fontSize: 18}}>
-            {item.sender.name}
-          </Text>
-          <Text style={{color: '#505050', fontSize: 13}}>
-            Requested to connect with you
-          </Text>
+        <View
+          style={{
+            marginLeft: 10,
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            height: '100%',
+          }}>
+          <View style={{marginTop: 5}}>
+            <Text style={{fontWeight: 'bold', fontSize: 18}}>
+              {item.sender.name}
+            </Text>
+            <Text style={{color: '#505050', fontSize: 13}}>
+              Requested to connect with you
+            </Text>
+          </View>
+
           <Text
             style={{
               color: '#505050',
               fontSize: 13,
               marginTop: 4,
             }}>
-            1 day ago
+            {moment(item.updated_at).fromNow()}
           </Text>
         </View>
       </View>
