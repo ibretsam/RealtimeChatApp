@@ -1,12 +1,17 @@
+import DeviceInfo from 'react-native-device-info';
 import ProfilePicture from '../assets/profile.png';
 import {URL} from './api';
 
 const log = (...args: any[]) => {
   Array.from(args).forEach(arg => {
     if (typeof arg === 'object') {
-      console.log(JSON.stringify(arg, null, 2));
+      DeviceInfo.getDeviceName().then(deviceName => {
+        console.log(deviceName + ': ' + JSON.stringify(arg, null, 2));
+      });
     } else {
-      console.log(arg);
+      DeviceInfo.getDeviceName().then(deviceName => {
+        console.log(deviceName + ': ' + arg);
+      });
     }
   });
 };
@@ -14,9 +19,13 @@ const log = (...args: any[]) => {
 const logError = (...args: any[]) => {
   Array.from(args).forEach(arg => {
     if (typeof arg === 'object') {
-      console.error(JSON.stringify(arg, null, 2));
+      DeviceInfo.getDeviceName().then(deviceName => {
+        console.error(deviceName + ': ' + JSON.stringify(arg, null, 2));
+      });
     } else {
-      console.error(arg);
+      DeviceInfo.getDeviceName().then(deviceName => {
+        console.error(deviceName + ': ' + arg);
+      });
     }
   });
 };
