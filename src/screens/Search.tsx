@@ -151,6 +151,7 @@ const SearchScreen: React.FC<SearchScreenProps> = ({navigation}) => {
     navigation.setOptions({
       headerShown: true,
       headerBackTitleVisible: false,
+      headerTintColor: 'tomato',
     });
   });
 
