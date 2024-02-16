@@ -1,6 +1,8 @@
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {
   ActivityIndicator,
+  Animated,
+  Easing,
   FlatList,
   InputAccessoryView,
   Keyboard,
@@ -13,57 +15,174 @@ import {
   View,
 } from 'react-native';
 import {RootStackParamList} from '../../App';
-import React, {useEffect, useLayoutEffect} from 'react';
+import React, {useEffect, useLayoutEffect, useRef} from 'react';
 import Avatar from '../common/Avatar';
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
 import useGlobal from '../core/global';
 import {log} from '../core/utils';
 
-const MessageBubble: React.FC<{message: Message; friend: User}> = ({
-  message,
-  friend,
-}) => {
-  const user = useGlobal(state => state.user);
+const TypingAnimation: React.FC<{offset: number}> = ({offset}) => {
+  const y = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const TOTAL = 1000;
+    const BUMP = 200;
+
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.delay(BUMP * offset),
+        Animated.timing(y, {
+          toValue: 1,
+          duration: BUMP,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        }),
+        Animated.timing(y, {
+          toValue: 0,
+          duration: BUMP,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        }),
+        Animated.delay(TOTAL - BUMP * 2 - BUMP * offset),
+      ]),
+    );
+
+    animation.start();
+    return () => animation.stop();
+  }, []);
+
+  const translateY = y.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -8],
+  });
+
+  return (
+    <Animated.View
+      style={{
+        width: 8,
+        height: 8,
+        marginHorizontal: 2,
+        borderRadius: 4,
+        backgroundColor: '#606060',
+        transform: [{translateY}],
+      }}
+    />
+  );
+};
+
+const MyMessageBubble: React.FC<{message: string}> = ({message}) => {
   return (
     <View
       style={{
         flexDirection: 'row',
-        justifyContent: message.is_my_message ? 'flex-end' : 'flex-start',
+        justifyContent: 'flex-end',
         marginBottom: 10,
       }}>
-      {!message.is_my_message && (
-        <View
-          style={{
-            justifyContent: 'center',
-            marginLeft: 10,
-            marginRight: 10,
-          }}>
-          <Avatar src={friend.thumbnail} size={30} />
-        </View>
-      )}
       <View
         style={{
-          backgroundColor: message.is_my_message ? 'tomato' : '#e0e0e0',
+          backgroundColor: 'tomato',
           padding: 10,
           borderRadius: 10,
           maxWidth: '80%',
         }}>
-        <Text
-          style={{
-            color: message.is_my_message ? 'white' : 'black',
-          }}>
-          {message.content}
-        </Text>
+        <Text style={{color: 'white'}}>{message}</Text>
       </View>
-      {message.is_my_message && (
+    </View>
+  );
+};
+
+const FriendMessageBubble: React.FC<{
+  message: string;
+  friend: User;
+  typing?: boolean;
+}> = ({message, friend, typing = false}) => {
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+        marginBottom: 10,
+      }}>
+      <Avatar src={friend.thumbnail} size={40} />
+      {typing ? (
         <View
           style={{
-            justifyContent: 'center',
+            flexDirection: 'row',
+            justifyContent: 'flex-start',
             marginLeft: 10,
-            marginRight: 10,
+            alignItems: 'center',
           }}>
-          {/* <Avatar src={user?.thumbnail} size={30} /> */}
+          <TypingAnimation offset={0} />
+          <TypingAnimation offset={1} />
+          <TypingAnimation offset={2} />
         </View>
+      ) : (
+        <View
+          style={{
+            backgroundColor: '#f0f0f0',
+            padding: 10,
+            borderRadius: 10,
+            maxWidth: '80%',
+            marginLeft: 10,
+          }}>
+          <Text style={{color: 'black'}}>{message}</Text>
+        </View>
+      )}
+    </View>
+  );
+};
+
+const MessageBubble: React.FC<{
+  message: Message;
+  friend: User;
+  index: number;
+}> = ({message, friend, index}) => {
+  const [showTyping, setShowTyping] = React.useState<boolean>(false);
+
+  const messagesTyping = useGlobal(state => state.messagesTyping);
+
+  useEffect(() => {
+    if (index !== 0) return;
+    if (messagesTyping === null) {
+      setShowTyping(false);
+      return;
+    }
+    setShowTyping(true);
+
+    const check = setInterval(() => {
+      const now = new Date();
+      const ms = now.getTime() - new Date(messagesTyping).getTime();
+      if (ms > 5000) {
+        setShowTyping(false);
+      }
+    }, 1000);
+    return () => clearInterval(check);
+  }, [messagesTyping]);
+
+  if (index === 0) {
+    if (showTyping) {
+      return (
+        <FriendMessageBubble
+          message={'Typing...'}
+          friend={friend}
+          typing={true}
+        />
+      );
+    }
+    return;
+  }
+
+  return (
+    <View
+      style={{
+        flexDirection: 'column',
+        justifyContent: 'flex-start',
+        marginBottom: 10,
+      }}>
+      {message.is_my_message ? (
+        <MyMessageBubble message={message.content} />
+      ) : (
+        <FriendMessageBubble message={message.content} friend={friend} />
       )}
     </View>
   );
@@ -161,7 +280,7 @@ type MessagesScreenProps = NativeStackScreenProps<
 >;
 
 const MessagesScreen: React.FC<MessagesScreenProps> = ({navigation, route}) => {
-  const connection = route.params.connection;
+  const preview = route.params.connection;
   const [message, setMessage] = React.useState<string>('');
   const [loading, setLoading] = React.useState<boolean>(false);
 
@@ -173,23 +292,32 @@ const MessagesScreen: React.FC<MessagesScreenProps> = ({navigation, route}) => {
     } else {
       return;
     }
-    messageSend(cleanedMessage, connection);
+    messageSend(cleanedMessage, preview);
+  };
+
+  const onType = (value: string) => {
+    setMessage(value);
+    if (messageTyping) {
+      messageTyping(preview);
+    }
   };
 
   const messagesList = useGlobal(state => state.messagesList);
   const messageList = useGlobal(state => state.messageList);
   const messageSend = useGlobal(state => state.messageSend);
+  const messageTyping = useGlobal(state => state.messageTyping);
+  const messageNext = useGlobal(state => state.messageNext);
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerTitle: props => <MessageHeader friend={connection.friend} />,
+      headerTitle: props => <MessageHeader friend={preview.friend} />,
       headerBackTitleVisible: false,
       headerTintColor: 'tomato',
     });
   });
 
   useEffect(() => {
-    messageList(connection);
+    messageList(preview);
   }, []);
 
   if (!messagesList) {
@@ -202,6 +330,23 @@ const MessagesScreen: React.FC<MessagesScreenProps> = ({navigation, route}) => {
       />
     );
   }
+
+  const connection: Connection = {
+    id: preview.id,
+    sender: preview.friend,
+    receiver: preview.friend,
+    created_at: '',
+    updated_at: preview.updated_at,
+  };
+
+  const typing: Message = {
+    id: -1,
+    connection: connection,
+    sender: preview.friend,
+    content: 'Typing...',
+    created_at: '',
+    is_my_message: false,
+  };
 
   return (
     <SafeAreaView style={{flex: 1}}>
@@ -217,29 +362,30 @@ const MessagesScreen: React.FC<MessagesScreenProps> = ({navigation, route}) => {
             contentContainerStyle={{
               paddingTop: 30,
             }}
-            data={messagesList}
+            data={[typing, ...messagesList]}
             inverted={true}
+            onEndReached={() => {
+              if (messageNext > 0) {
+                messageList(preview, messageNext);
+              }
+            }}
             keyExtractor={(item, index) => index.toString()}
-            renderItem={({item}) => (
-              <MessageBubble message={item} friend={connection.friend} />
+            renderItem={({item, index}) => (
+              <MessageBubble
+                message={item}
+                friend={preview.friend}
+                index={index}
+              />
             )}
           />
         </View>
       </TouchableWithoutFeedback>
       {Platform.OS === 'ios' ? (
         <InputAccessoryView>
-          <MessageInput
-            message={message}
-            setMessage={setMessage}
-            onSend={onSend}
-          />
+          <MessageInput message={message} setMessage={onType} onSend={onSend} />
         </InputAccessoryView>
       ) : (
-        <MessageInput
-          message={message}
-          setMessage={setMessage}
-          onSend={onSend}
-        />
+        <MessageInput message={message} setMessage={onType} onSend={onSend} />
       )}
     </SafeAreaView>
   );
