@@ -26,8 +26,11 @@ type State = {
   accept: (username: string) => void;
   requestList: Connection[] | null;
   friendList: MessagePreview[] | null;
+  messageTyping: (preview: MessagePreview) => void;
+  messageNext: number;
   messageSend: (message: string, connection: MessagePreview) => void;
   messagesList: Message[] | null;
+  messagesTyping: Date | null;
   messageUser: User | null;
   messageList: (connection: MessagePreview, page?: number) => void;
 };
@@ -252,6 +255,7 @@ const useGlobal = create<State>((set, get) => ({
         ) => {
           data = data as MessageData;
           const messages = data.messages as Message[];
+          const next = data.next;
           const user = data.user;
           log('Message list response: ', data);
           if (!Array.isArray(data.messages)) {
@@ -259,6 +263,7 @@ const useGlobal = create<State>((set, get) => ({
           }
           set(state => ({
             messagesList: [...get().messagesList!, ...messages],
+            messageNext: next,
             messageUser: user,
           }));
         },
@@ -294,7 +299,20 @@ const useGlobal = create<State>((set, get) => ({
           // }
 
           const messagesList = [message, ...get().messagesList!];
-          set(state => ({messagesList}));
+          set(state => ({messagesList, messagesTyping: null}));
+        },
+        'message-typing': (
+          set: SetState,
+          get: () => State,
+          data: ResponseData,
+        ) => {
+          data = data as ResponseData & {username: string};
+          log('Message typing response: ', data);
+          // if (data.username !== get().messageUser?.username) return;
+
+          set(state => ({
+            messagesTyping: new Date(),
+          }));
         },
       };
 
@@ -400,13 +418,19 @@ const useGlobal = create<State>((set, get) => ({
   //  Message List  //
   //----------------//
   messagesList: [],
+  messagesTyping: null,
+  messageNext: 0,
   messageUser: null,
   messageList: (connection: MessagePreview, page: number = 0) => {
     if (page === 0) {
       set({
         messagesList: [],
+        messageNext: 0,
+        messagesTyping: null,
         messageUser: null,
       });
+    } else {
+      set({messageNext: 0});
     }
 
     const socket = get().socket;
@@ -415,6 +439,19 @@ const useGlobal = create<State>((set, get) => ({
         source: 'message-list',
         connectionId: connection.id,
         page,
+      }),
+    );
+  },
+
+  //------------------//
+  //  Message Typing  //
+  //------------------//
+  messageTyping: (preview: MessagePreview) => {
+    const socket = get().socket;
+    socket?.send(
+      JSON.stringify({
+        source: 'message-typing',
+        username: preview.friend.username,
       }),
     );
   },

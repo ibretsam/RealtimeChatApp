@@ -51,5 +51,6 @@ declare interface Message {
 
 declare interface MessageData {
   messages: Message | Message[];
+  next: number;
   user: User;
 }
