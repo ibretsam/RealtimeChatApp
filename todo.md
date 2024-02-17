@@ -1,0 +1,35 @@
+To be improved in the future for the app:
+- [ ] Error handling:
+    - [ ] Login and registration screen: When the user enters the wrong password, username, email, the app should display a message to the user.
+    - [ ] Internet connection: When the user has no internet connection, the app should display a message to the user.
+    - [ ] Websocket disconnected, reconnected, error or closed: When the websocket is disconnected, the app should display a message to the user.
+- [ ] Add a loading spinner when the app is loading data.
+  - [x] Request Screen
+  - [ ] Messages Screen
+  - [ ] Profile Screen
+- [ ] Change the app layout:
+  - [ ] 3 tabs: Contacts, Messages, Profile
+  - [ ] Request page should be inside of the Contacts screen, add an icon on that screen to access it. Remember to update the icon when new requests are received.
+- [ ] Add a search bar to the Contacts screen.
+- [ ] Add a search bar to the Messages screen.
+- [ ] Add a read/unread message feature.
+- [ ] Add a feature to see if the message was delivered/read.
+- [ ] Add push notifications when a new message is received.
+- [ ] Add a feature to send images/videos/files.
+- [ ] Add a feature to send voice messages.
+- [ ] Add a group chat feature.
+- [ ] Add a feature to block users.
+- [ ] Add a feature to delete messages.
+- [ ] Add a feature to mute notifications.
+- [ ] Add a feature to change the user's profile picture.
+  - [x] Change user's profile picture
+  - [ ] Allow user to crop or small edit the picture before saving it.
+- [ ] Move all media files to a CDN.
+- [ ] Add a feature to change the user's password.
+- [ ] Add a feature to change the user's email.
+- [ ] Add a feature to change the user's username.
+- [ ] Add a feature to change the user's name.
+- [ ] Add login with phone number.
+- [ ] Link the app with Google, Facebook, Apple accounts for user login later.
+- [ ] Add a feature to delete the user's account.
+- [ ] Add a feature to be able to see if the user is online or not and the last time the user was online.
