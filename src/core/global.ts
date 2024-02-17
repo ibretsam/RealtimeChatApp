@@ -1,8 +1,7 @@
 import {create} from 'zustand';
 import secure from './secure';
 import {log} from './utils';
-import {URL} from './api';
-import {API_BASE_URL} from '@env';
+import {DEBUG, URL} from './api';
 import {Asset} from 'react-native-image-picker';
 
 type State = {
@@ -96,7 +95,8 @@ const useGlobal = create<State>((set, get) => ({
     const accessToken = await secure.get('accessToken');
     const refreshToken = await secure.get('refreshToken');
 
-    const url = `ws://${API_BASE_URL}/chat/?token=${accessToken}`;
+
+    const url = `${DEBUG ? 'ws' : 'wss'}://${URL}/chat/?token=${accessToken}`;
     log('Connecting to socket: ', url);
 
     const socket = new WebSocket(url);

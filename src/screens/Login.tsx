@@ -16,7 +16,7 @@ import {useLayoutEffect, useState} from 'react';
 import Title from '../common/Title';
 import Input from '../common/Input';
 import Button from '../common/Button';
-import api from '../core/api';
+import api, { URL } from '../core/api';
 import {API_BASE_URL} from '@env';
 import {log} from '../core/utils';
 import useGlobal from '../core/global';
@@ -58,7 +58,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
 
     if (validate()) {
       log('Validated');
-      log(API_BASE_URL);
+      log(URL);
       api({
         method: 'POST',
         url: '/api/chat/login/',
