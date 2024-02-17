@@ -1,5 +1,5 @@
-import {Image} from 'react-native';
 import {thumbnail} from '../core/utils';
+import FastImage from 'react-native-fast-image';
 
 interface AvatarProps {
   src: string | undefined;
@@ -8,7 +8,7 @@ interface AvatarProps {
 
 const Avatar: React.FC<AvatarProps> = ({src, size}) => {
   return (
-    <Image
+    <FastImage
       source={thumbnail(src)}
       style={{
         width: size,
