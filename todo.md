@@ -46,7 +46,7 @@
 
 - [ ] Profile Picture: Allow users to change their profile picture and edit it before saving.
 
-- [ ] CDN Integration: Migrate all media files to a Content Delivery Network (CDN).
+- [x] CDN Integration: Migrate all media files to a Content Delivery Network (CDN).
 
 - [ ] Profile Updates: Enable users to update their password, email, username, and name.
 
