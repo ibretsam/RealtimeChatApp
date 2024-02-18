@@ -43,6 +43,8 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({navigation}) => {
   useLayoutEffect(() => {
     navigation.setOptions({
       headerShown: false,
+      gestureEnabled: true,
+      fullScreenGestureEnabled: true,
     });
   }, []);
 

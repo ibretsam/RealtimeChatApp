@@ -152,6 +152,8 @@ const SearchScreen: React.FC<SearchScreenProps> = ({navigation}) => {
       headerShown: true,
       headerBackTitleVisible: false,
       headerTintColor: 'tomato',
+      gestureEnabled: true,
+      fullScreenGestureEnabled: true,
     });
   });
 

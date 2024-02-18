@@ -34,6 +34,8 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
   useLayoutEffect(() => {
     navigation.setOptions({
       headerShown: false,
+      gestureEnabled: true,
+      fullScreenGestureEnabled: true,
     });
   }, []);
 
