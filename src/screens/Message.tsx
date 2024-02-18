@@ -350,7 +350,6 @@ const MessagesScreen: React.FC<MessagesScreenProps> = ({navigation, route}) => {
 
   return (
     <SafeAreaView style={{flex: 1}}>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View
           style={{
             flex: 1,
@@ -379,7 +378,6 @@ const MessagesScreen: React.FC<MessagesScreenProps> = ({navigation, route}) => {
             )}
           />
         </View>
-      </TouchableWithoutFeedback>
       {Platform.OS === 'ios' ? (
         <InputAccessoryView>
           <MessageInput message={message} setMessage={onType} onSend={onSend} />
