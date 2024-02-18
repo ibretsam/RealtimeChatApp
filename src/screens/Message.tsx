@@ -5,13 +5,11 @@ import {
   Easing,
   FlatList,
   InputAccessoryView,
-  Keyboard,
   Platform,
   SafeAreaView,
   Text,
   TextInput,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 import {RootStackParamList} from '../../App';
@@ -19,7 +17,6 @@ import React, {useEffect, useLayoutEffect, useRef} from 'react';
 import Avatar from '../common/Avatar';
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
 import useGlobal from '../core/global';
-import {log} from '../core/utils';
 
 const TypingAnimation: React.FC<{offset: number}> = ({offset}) => {
   const y = useRef(new Animated.Value(0)).current;
@@ -260,7 +257,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
           placeholder="Type a message"
           value={message}
           onChangeText={handleInput}
-          autoFocus={true}
+          // autoFocus={true}
         />
       </View>
       <TouchableOpacity disabled={disabled} onPress={onSend}>
@@ -313,6 +310,8 @@ const MessagesScreen: React.FC<MessagesScreenProps> = ({navigation, route}) => {
       headerTitle: props => <MessageHeader friend={preview.friend} />,
       headerBackTitleVisible: false,
       headerTintColor: 'tomato',
+      gestureEnabled: true,
+      fullScreenGestureEnabled: true,
     });
   });
 
@@ -349,7 +348,7 @@ const MessagesScreen: React.FC<MessagesScreenProps> = ({navigation, route}) => {
   };
 
   return (
-    <SafeAreaView style={{flex: 1}}>
+      <SafeAreaView style={{flex: 1}}>
         <View
           style={{
             flex: 1,
@@ -378,14 +377,18 @@ const MessagesScreen: React.FC<MessagesScreenProps> = ({navigation, route}) => {
             )}
           />
         </View>
-      {Platform.OS === 'ios' ? (
-        <InputAccessoryView>
+        {Platform.OS === 'ios' ? (
+          <InputAccessoryView>
+            <MessageInput
+              message={message}
+              setMessage={onType}
+              onSend={onSend}
+            />
+          </InputAccessoryView>
+        ) : (
           <MessageInput message={message} setMessage={onType} onSend={onSend} />
-        </InputAccessoryView>
-      ) : (
-        <MessageInput message={message} setMessage={onType} onSend={onSend} />
-      )}
-    </SafeAreaView>
+        )}
+      </SafeAreaView>
   );
 };
 
