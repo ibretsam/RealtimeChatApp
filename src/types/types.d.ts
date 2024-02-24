@@ -45,6 +45,7 @@ declare interface Message {
   connection: Connection;
   sender: User;
   content: string;
+  image_url: string | undefined;
   created_at: string;
   is_my_message: boolean;
 }
