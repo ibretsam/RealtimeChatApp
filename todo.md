@@ -35,6 +35,12 @@
 - [ ] Push Notifications: Implement push notifications for new messages.
 
 - [ ] Media Messages: Enable sending of images, videos, and files.
+  - [x] Send Images: Allow sending of images in chat messages.
+  - [ ] Send Videos: Allow sending of videos in chat messages.
+  - [ ] Send Files: Allow sending of files in chat messages.
+  - [ ] Media Previews: Display image and video previews in chat messages.
+  - [ ] File Previews: Display file icons for file attachments in chat messages.
+  - [ ] Media Downloads: Enable downloading of media files from chat messages.
 
 - [ ] Voice Messages: Allow sending of voice messages.
 
