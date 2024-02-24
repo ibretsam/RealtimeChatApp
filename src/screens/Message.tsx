@@ -17,6 +17,8 @@ import React, {useEffect, useLayoutEffect, useRef} from 'react';
 import Avatar from '../common/Avatar';
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
 import useGlobal from '../core/global';
+import {Asset, launchImageLibrary} from 'react-native-image-picker';
+import FastImage from 'react-native-fast-image';
 
 const TypingAnimation: React.FC<{offset: number}> = ({offset}) => {
   const y = useRef(new Animated.Value(0)).current;
@@ -67,7 +69,10 @@ const TypingAnimation: React.FC<{offset: number}> = ({offset}) => {
   );
 };
 
-const MyMessageBubble: React.FC<{message: string}> = ({message}) => {
+const MyMessageBubble: React.FC<{message: string; image_url?: string}> = ({
+  message,
+  image_url,
+}) => {
   return (
     <View
       style={{
@@ -82,6 +87,18 @@ const MyMessageBubble: React.FC<{message: string}> = ({message}) => {
           borderRadius: 10,
           maxWidth: '80%',
         }}>
+        {image_url && (
+          <FastImage
+            source={{uri: image_url}}
+            style={{
+              height: 200,
+              aspectRatio: 1,
+              borderRadius: 10,
+              margin: 3,
+              marginBottom: 10,
+            }}
+          />
+        )}
         <Text style={{color: 'white'}}>{message}</Text>
       </View>
     </View>
@@ -91,8 +108,9 @@ const MyMessageBubble: React.FC<{message: string}> = ({message}) => {
 const FriendMessageBubble: React.FC<{
   message: string;
   friend: User;
+  image_url?: string;
   typing?: boolean;
-}> = ({message, friend, typing = false}) => {
+}> = ({message, friend, image_url, typing = false}) => {
   return (
     <View
       style={{
@@ -122,6 +140,18 @@ const FriendMessageBubble: React.FC<{
             maxWidth: '80%',
             marginLeft: 10,
           }}>
+          {image_url && (
+            <FastImage
+              source={{uri: image_url}}
+              style={{
+                height: 200,
+                aspectRatio: 1,
+                borderRadius: 10,
+                margin: 3,
+                marginBottom: 10,
+              }}
+            />
+          )}
           <Text style={{color: 'black'}}>{message}</Text>
         </View>
       )}
@@ -177,9 +207,16 @@ const MessageBubble: React.FC<{
         marginBottom: 10,
       }}>
       {message.is_my_message ? (
-        <MyMessageBubble message={message.content} />
+        <MyMessageBubble
+          message={message.content}
+          image_url={message.image_url}
+        />
       ) : (
-        <FriendMessageBubble message={message.content} friend={friend} />
+        <FriendMessageBubble
+          message={message.content}
+          friend={friend}
+          image_url={message.image_url}
+        />
       )}
     </View>
   );
@@ -221,19 +258,48 @@ interface MessageInputProps {
   message: string;
   setMessage: (text: string) => void;
   onSend: () => void;
+  image: Asset | null;
+  setImage: (image: Asset | null) => void;
 }
 
 const MessageInput: React.FC<MessageInputProps> = ({
   message,
   setMessage,
   onSend,
+  image,
+  setImage,
 }) => {
   const [disabled, setDisabled] = React.useState<boolean>(true);
+  const [imageSelect, setImageSelect] = React.useState<boolean>(false);
+  const [parentWidth, setParentWidth] = React.useState<number>(0);
+
+  const onImageSelected = () => {
+    console.log('Image selected');
+    launchImageLibrary(
+      {
+        mediaType: 'photo',
+        includeBase64: true,
+      },
+      response => {
+        if (response.didCancel) return;
+        const file = response.assets?.[0];
+        if (file) {
+          setImageSelect(true);
+          setImage(file);
+        }
+      },
+    );
+  };
 
   const handleInput = (text: string) => {
     setMessage(text);
-    setDisabled(text.length === 0);
+    setDisabled(text.length === 0 && !image);
   };
+
+  useEffect(() => {
+    setImageSelect(image !== null);
+    setDisabled(message.length === 0 && !image);
+  }, [image]);
 
   return (
     <View
@@ -252,7 +318,55 @@ const MessageInput: React.FC<MessageInputProps> = ({
           borderWidth: 1,
           borderColor: '#e0e0e0',
           padding: 10,
+        }}
+        onLayout={event => {
+          var {width} = event.nativeEvent.layout;
+          setParentWidth(width);
         }}>
+        {imageSelect && (
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginBottom: 10,
+            }}>
+            <TouchableOpacity
+              onPress={() => setImageSelect(false)}
+              style={{
+                position: 'absolute',
+                right: 5,
+                top: 5,
+                backgroundColor: 'white',
+                width: 30,
+                height: 30,
+                borderRadius: 15,
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderWidth: 1,
+                borderColor: 'gray',
+                zIndex: 100,
+              }}>
+              <FontAwesomeIcon icon="circle-xmark" size={24} color="gray" />
+            </TouchableOpacity>
+
+            <FastImage
+              source={{uri: image?.uri}}
+              style={{
+                height: 200,
+                width: image
+                  ? Math.min(
+                      parentWidth,
+                      200 * ((image.width ?? 1) / (image.height ?? 1)),
+                    )
+                  : 200,
+                borderRadius: 10,
+                marginRight: 10,
+              }}
+              resizeMode={FastImage.resizeMode.contain}
+            />
+          </View>
+        )}
         <TextInput
           placeholder="Type a message"
           value={message}
@@ -260,6 +374,16 @@ const MessageInput: React.FC<MessageInputProps> = ({
           // autoFocus={true}
         />
       </View>
+      <TouchableOpacity
+        style={{
+          justifyContent: 'center',
+          alignItems: 'center',
+          marginLeft: 5,
+          marginRight: 15,
+        }}
+        onPress={onImageSelected}>
+        <FontAwesomeIcon icon="image" size={24} color="gray" />
+      </TouchableOpacity>
       <TouchableOpacity disabled={disabled} onPress={onSend}>
         <FontAwesomeIcon
           icon="circle-arrow-up"
@@ -280,6 +404,7 @@ const MessagesScreen: React.FC<MessagesScreenProps> = ({navigation, route}) => {
   const preview = route.params.connection;
   const [message, setMessage] = React.useState<string>('');
   const [loading, setLoading] = React.useState<boolean>(false);
+  const [imageSelect, setImageSelect] = React.useState<Asset | null>(null);
 
   const onSend = () => {
     const cleanedMessage = message.replace(/\s+/g, ' ').trim();
@@ -289,7 +414,11 @@ const MessagesScreen: React.FC<MessagesScreenProps> = ({navigation, route}) => {
     } else {
       return;
     }
-    messageSend(cleanedMessage, preview);
+    if (imageSelect) {
+      console.log('Send image:', imageSelect);
+      setImageSelect(null);
+    }
+    messageSend(cleanedMessage, imageSelect, preview);
   };
 
   const onType = (value: string) => {
@@ -343,52 +472,61 @@ const MessagesScreen: React.FC<MessagesScreenProps> = ({navigation, route}) => {
     connection: connection,
     sender: preview.friend,
     content: 'Typing...',
+    image_url: undefined,
     created_at: '',
     is_my_message: false,
   };
 
   return (
-      <SafeAreaView style={{flex: 1}}>
-        <View
-          style={{
-            flex: 1,
-            padding: 10,
-            marginBottom: Platform.OS === 'ios' ? 50 : 0,
-          }}>
-          <FlatList
-            automaticallyAdjustKeyboardInsets={true}
-            contentContainerStyle={{
-              paddingTop: 30,
-            }}
-            data={[typing, ...messagesList]}
-            inverted={true}
-            onEndReached={() => {
-              if (messageNext > 0) {
-                messageList(preview, messageNext);
-              }
-            }}
-            keyExtractor={(item, index) => index.toString()}
-            renderItem={({item, index}) => (
-              <MessageBubble
-                message={item}
-                friend={preview.friend}
-                index={index}
-              />
-            )}
-          />
-        </View>
-        {Platform.OS === 'ios' ? (
-          <InputAccessoryView>
-            <MessageInput
-              message={message}
-              setMessage={onType}
-              onSend={onSend}
+    <SafeAreaView style={{flex: 1}}>
+      <View
+        style={{
+          flex: 1,
+          padding: 10,
+          marginBottom: Platform.OS === 'ios' ? 50 : 0,
+        }}>
+        <FlatList
+          automaticallyAdjustKeyboardInsets={true}
+          contentContainerStyle={{
+            paddingTop: 30,
+          }}
+          data={[typing, ...messagesList]}
+          inverted={true}
+          onEndReached={() => {
+            if (messageNext > 0) {
+              messageList(preview, messageNext);
+            }
+          }}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={({item, index}) => (
+            <MessageBubble
+              message={item}
+              friend={preview.friend}
+              index={index}
             />
-          </InputAccessoryView>
-        ) : (
-          <MessageInput message={message} setMessage={onType} onSend={onSend} />
-        )}
-      </SafeAreaView>
+          )}
+        />
+      </View>
+      {Platform.OS === 'ios' ? (
+        <InputAccessoryView>
+          <MessageInput
+            message={message}
+            setMessage={onType}
+            onSend={onSend}
+            image={imageSelect}
+            setImage={setImageSelect}
+          />
+        </InputAccessoryView>
+      ) : (
+        <MessageInput
+          message={message}
+          setMessage={onType}
+          onSend={onSend}
+          image={imageSelect}
+          setImage={setImageSelect}
+        />
+      )}
+    </SafeAreaView>
   );
 };
 

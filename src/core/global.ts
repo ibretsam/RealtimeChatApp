@@ -27,7 +27,11 @@ type State = {
   friendList: MessagePreview[] | null;
   messageTyping: (preview: MessagePreview) => void;
   messageNext: number;
-  messageSend: (message: string, connection: MessagePreview) => void;
+  messageSend: (
+    message: string,
+    image: Asset | null,
+    connection: MessagePreview,
+  ) => void;
   messagesList: Message[] | null;
   messagesTyping: Date | null;
   messageUser: User | null;
@@ -94,7 +98,6 @@ const useGlobal = create<State>((set, get) => ({
   socketConnect: async () => {
     const accessToken = await secure.get('accessToken');
     const refreshToken = await secure.get('refreshToken');
-
 
     const url = `${DEBUG ? 'ws' : 'wss'}://${URL}/chat/?token=${accessToken}`;
     log('Connecting to socket: ', url);
@@ -401,17 +404,35 @@ const useGlobal = create<State>((set, get) => ({
   //----------------//
   //  Message Send  //
   //----------------//
-  messageSend: (message: string, connection: MessagePreview) => {
+  messageSend: (
+    message: string,
+    image: Asset | null,
+    connection: MessagePreview,
+  ) => {
     const socket = get().socket;
-    socket?.send(
-      JSON.stringify({
-        source: 'message-send',
-        message_type: 'text',
-        message,
-        connectionId: connection.id,
-        senderId: get().user?.id,
-      }),
-    );
+    if (image) {
+      socket?.send(
+        JSON.stringify({
+          source: 'message-send',
+          message_type: 'image',
+          message,
+          connectionId: connection.id,
+          senderId: get().user?.id,
+          image: image.base64,
+          filename: image.fileName,
+        }),
+      );
+    } else {
+      socket?.send(
+        JSON.stringify({
+          source: 'message-send',
+          message_type: 'text',
+          message,
+          connectionId: connection.id,
+          senderId: get().user?.id,
+        }),
+      );
+    }
   },
 
   //----------------//
