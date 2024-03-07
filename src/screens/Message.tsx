@@ -4,6 +4,7 @@ import {
   Animated,
   Easing,
   FlatList,
+  Image,
   InputAccessoryView,
   Platform,
   SafeAreaView,
@@ -13,7 +14,7 @@ import {
   View,
 } from 'react-native';
 import {RootStackParamList} from '../../App';
-import React, {useEffect, useLayoutEffect, useRef} from 'react';
+import React, {useEffect, useLayoutEffect, useRef, useState} from 'react';
 import Avatar from '../common/Avatar';
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
 import useGlobal from '../core/global';
@@ -69,37 +70,42 @@ const TypingAnimation: React.FC<{offset: number}> = ({offset}) => {
   );
 };
 
-const MyMessageBubble: React.FC<{message: string; image_url?: string}> = ({
+const MyMessageBubble: React.FC<{message: string; image_url?: string, imageSize?: {width: number, height: number}}> = ({
   message,
   image_url,
+  imageSize
 }) => {
+  
+
   return (
     <View
       style={{
         flexDirection: 'row',
         justifyContent: 'flex-end',
-        marginBottom: 10,
+        marginBottom: 5,
       }}>
       <View
         style={{
           backgroundColor: 'tomato',
-          padding: 10,
-          borderRadius: 10,
-          maxWidth: '80%',
+          padding: image_url ? 0 : 10,
+            borderRadius: 10,
+            maxWidth: '80%',
+            justifyContent: 'center'
         }}>
         {image_url && (
-          <FastImage
-            source={{uri: image_url}}
-            style={{
-              height: 200,
-              aspectRatio: 1,
-              borderRadius: 10,
-              margin: 3,
-              marginBottom: 10,
-            }}
-          />
+            <FastImage
+              source={{uri: image_url}}
+              style={{
+                height: imageSize?.height,
+                width: imageSize?.width,
+                borderTopLeftRadius: 8,
+                borderTopRightRadius: 8,
+                margin: 2,
+                marginBottom: 5,
+              }}
+            />
         )}
-        <Text style={{color: 'white'}}>{message}</Text>
+        <Text style={{color: 'white', paddingLeft: image_url ? 5 : 0, marginBottom: image_url ? 5 : 0}}>{message}</Text>
       </View>
     </View>
   );
@@ -110,13 +116,15 @@ const FriendMessageBubble: React.FC<{
   friend: User;
   image_url?: string;
   typing?: boolean;
-}> = ({message, friend, image_url, typing = false}) => {
+  imageSize?: {width: number, height: number};
+}> = ({message, friend, image_url, typing = false, imageSize}) => {
+
   return (
     <View
       style={{
         flexDirection: 'row',
         justifyContent: 'flex-start',
-        marginBottom: 10,
+        marginBottom: 5,
       }}>
       <Avatar src={friend.thumbnail} size={40} />
       {typing ? (
@@ -135,24 +143,26 @@ const FriendMessageBubble: React.FC<{
         <View
           style={{
             backgroundColor: '#f0f0f0',
-            padding: 10,
+            padding: image_url ? 0 : 5,
             borderRadius: 10,
             maxWidth: '80%',
             marginLeft: 10,
+            justifyContent: 'center'
           }}>
           {image_url && (
             <FastImage
               source={{uri: image_url}}
               style={{
-                height: 200,
-                aspectRatio: 1,
-                borderRadius: 10,
-                margin: 3,
-                marginBottom: 10,
+                height: imageSize?.height,
+                width: imageSize?.width,
+                borderTopLeftRadius: 8,
+                borderTopRightRadius: 8,
+                margin: 2,
+                marginBottom: 5,
               }}
             />
           )}
-          <Text style={{color: 'black'}}>{message}</Text>
+          <Text style={{color: 'black', paddingLeft: image_url ? 5 : 0, marginBottom: image_url ? 5 : 0}}>{message}</Text>
         </View>
       )}
     </View>
@@ -165,6 +175,25 @@ const MessageBubble: React.FC<{
   index: number;
 }> = ({message, friend, index}) => {
   const [showTyping, setShowTyping] = React.useState<boolean>(false);
+  const [imageSize, setImageSize] = useState<{width: number, height: number} | null>(null);
+
+  useEffect(() => {
+    if (message.image_url) {
+      Image.getSize(message.image_url, (width, height) => {
+        let newWidth, newHeight;
+
+        if (height > width) {
+          newHeight = 200;
+          newWidth = (width / height) * 200;
+        } else {
+          newWidth = 200;
+          newHeight = (height / width) * newWidth;
+        }
+
+        setImageSize({width: newWidth, height: newHeight});
+      });
+    }
+  }, [message.image_url])
 
   const messagesTyping = useGlobal(state => state.messagesTyping);
 
@@ -210,12 +239,14 @@ const MessageBubble: React.FC<{
         <MyMessageBubble
           message={message.content}
           image_url={message.image_url}
+          imageSize={imageSize as { width: number; height: number; } | undefined}
         />
       ) : (
         <FriendMessageBubble
           message={message.content}
           friend={friend}
           image_url={message.image_url}
+          imageSize={imageSize as { width: number; height: number; } | undefined}
         />
       )}
     </View>
