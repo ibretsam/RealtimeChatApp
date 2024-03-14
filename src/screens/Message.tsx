@@ -20,6 +20,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
 import useGlobal from '../core/global';
 import {Asset, launchImageLibrary} from 'react-native-image-picker';
 import FastImage from 'react-native-fast-image';
+import ImageView from 'react-native-image-viewing';
 
 const TypingAnimation: React.FC<{offset: number}> = ({offset}) => {
   const y = useRef(new Animated.Value(0)).current;
@@ -70,12 +71,39 @@ const TypingAnimation: React.FC<{offset: number}> = ({offset}) => {
   );
 };
 
-const MyMessageBubble: React.FC<{message: string; image_url?: string, imageSize?: {width: number, height: number}}> = ({
-  message,
-  image_url,
-  imageSize
-}) => {
-  
+const MyMessageBubble: React.FC<{
+  message: string;
+  image_url?: string;
+  imageSize?: {width: number; height: number};
+  imagesList: (string | undefined)[];
+}> = ({message, image_url, imageSize, imagesList}) => {
+  const [showImage, setShowImage] = useState<boolean>(false);
+  const [imageIndex, setImageIndex] = useState<number>(0);
+  const images_url = useGlobal(state => state.imagesList);
+
+  const OnImagePress = (currentImageUrl: string) => {
+    console.log('Image pressed');
+    console.log('Current image url:', currentImageUrl);
+    const {imageIndex} = getImageUrlsAndIndex(
+      currentImageUrl,
+      imagesList || [],
+    );
+    setShowImage(true);
+    setImageIndex(imageIndex);
+  };
+
+  if (showImage) {
+    return (
+      <ImageView
+        images={images_url ? images_url.map(url => ({uri: url})) : []}
+        imageIndex={imageIndex}
+        visible={showImage}
+        onRequestClose={() => setShowImage(false)}
+        swipeToCloseEnabled
+        doubleTapToZoomEnabled
+      />
+    );
+  }
 
   return (
     <View
@@ -88,11 +116,12 @@ const MyMessageBubble: React.FC<{message: string; image_url?: string, imageSize?
         style={{
           backgroundColor: 'tomato',
           padding: image_url ? 0 : 10,
-            borderRadius: 10,
-            maxWidth: '80%',
-            justifyContent: 'center'
+          borderRadius: 10,
+          maxWidth: '80%',
+          justifyContent: 'center',
         }}>
         {image_url && (
+          <TouchableOpacity onPress={() => OnImagePress(image_url)}>
             <FastImage
               source={{uri: image_url}}
               style={{
@@ -104,11 +133,27 @@ const MyMessageBubble: React.FC<{message: string; image_url?: string, imageSize?
                 marginBottom: 5,
               }}
             />
+          </TouchableOpacity>
         )}
-        <Text style={{color: 'white', paddingLeft: image_url ? 5 : 0, marginBottom: image_url ? 5 : 0}}>{message}</Text>
+        <Text
+          style={{
+            color: 'white',
+            paddingLeft: image_url ? 5 : 0,
+            marginBottom: image_url ? 5 : 0,
+          }}>
+          {message}
+        </Text>
       </View>
     </View>
   );
+};
+
+const getImageUrlsAndIndex = (
+  currentImageUrl: string,
+  imagesList: (string | undefined)[],
+) => {
+  const imageIndex = imagesList.indexOf(currentImageUrl);
+  return {imagesList, imageIndex};
 };
 
 const FriendMessageBubble: React.FC<{
@@ -116,8 +161,36 @@ const FriendMessageBubble: React.FC<{
   friend: User;
   image_url?: string;
   typing?: boolean;
-  imageSize?: {width: number, height: number};
-}> = ({message, friend, image_url, typing = false, imageSize}) => {
+  imageSize?: {width: number; height: number};
+  imagesList?: (string | undefined)[];
+}> = ({message, friend, image_url, typing = false, imageSize, imagesList}) => {
+  const images_url = useGlobal(state => state.imagesList);
+  const [showImage, setShowImage] = useState<boolean>(false);
+  const [imageIndex, setImageIndex] = useState<number>(0);
+
+  const OnImagePress = (currentImageUrl: string) => {
+    console.log('Image pressed');
+    console.log('Current image url:', currentImageUrl);
+    const {imageIndex} = getImageUrlsAndIndex(
+      currentImageUrl,
+      imagesList || [],
+    );
+    setShowImage(true);
+    setImageIndex(imageIndex);
+  };
+
+  if (showImage) {
+    return (
+      <ImageView
+        images={images_url ? images_url.map(url => ({uri: url})) : []}
+        imageIndex={imageIndex}
+        visible={showImage}
+        onRequestClose={() => setShowImage(false)}
+        swipeToCloseEnabled
+        doubleTapToZoomEnabled
+      />
+    );
+  }
 
   return (
     <View
@@ -147,22 +220,31 @@ const FriendMessageBubble: React.FC<{
             borderRadius: 10,
             maxWidth: '80%',
             marginLeft: 10,
-            justifyContent: 'center'
+            justifyContent: 'center',
           }}>
           {image_url && (
-            <FastImage
-              source={{uri: image_url}}
-              style={{
-                height: imageSize?.height,
-                width: imageSize?.width,
-                borderTopLeftRadius: 8,
-                borderTopRightRadius: 8,
-                margin: 2,
-                marginBottom: 5,
-              }}
-            />
+            <TouchableOpacity onPress={() => OnImagePress(image_url)}>
+              <FastImage
+                source={{uri: image_url}}
+                style={{
+                  height: imageSize?.height,
+                  width: imageSize?.width,
+                  borderTopLeftRadius: 8,
+                  borderTopRightRadius: 8,
+                  margin: 2,
+                  marginBottom: 5,
+                }}
+              />
+            </TouchableOpacity>
           )}
-          <Text style={{color: 'black', paddingLeft: image_url ? 5 : 0, marginBottom: image_url ? 5 : 0}}>{message}</Text>
+          <Text
+            style={{
+              color: 'black',
+              paddingLeft: image_url ? 5 : 0,
+              marginBottom: image_url ? 5 : 0,
+            }}>
+            {message}
+          </Text>
         </View>
       )}
     </View>
@@ -175,7 +257,14 @@ const MessageBubble: React.FC<{
   index: number;
 }> = ({message, friend, index}) => {
   const [showTyping, setShowTyping] = React.useState<boolean>(false);
-  const [imageSize, setImageSize] = useState<{width: number, height: number} | null>(null);
+  const [imageSize, setImageSize] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
+
+  const imagesList = useGlobal(state => state.messagesList ?? [])
+    .filter(message => message.image_url !== undefined)
+    .map(message => message.image_url);
 
   useEffect(() => {
     if (message.image_url) {
@@ -193,7 +282,7 @@ const MessageBubble: React.FC<{
         setImageSize({width: newWidth, height: newHeight});
       });
     }
-  }, [message.image_url])
+  }, [message.image_url]);
 
   const messagesTyping = useGlobal(state => state.messagesTyping);
 
@@ -239,14 +328,16 @@ const MessageBubble: React.FC<{
         <MyMessageBubble
           message={message.content}
           image_url={message.image_url}
-          imageSize={imageSize as { width: number; height: number; } | undefined}
+          imageSize={imageSize as {width: number; height: number} | undefined}
+          imagesList={imagesList}
         />
       ) : (
         <FriendMessageBubble
           message={message.content}
           friend={friend}
           image_url={message.image_url}
-          imageSize={imageSize as { width: number; height: number; } | undefined}
+          imageSize={imageSize as {width: number; height: number} | undefined}
+          imagesList={imagesList}
         />
       )}
     </View>
@@ -464,6 +555,7 @@ const MessagesScreen: React.FC<MessagesScreenProps> = ({navigation, route}) => {
   const messageSend = useGlobal(state => state.messageSend);
   const messageTyping = useGlobal(state => state.messageTyping);
   const messageNext = useGlobal(state => state.messageNext);
+  const images_url = useGlobal(state => state.imagesList);
 
   useLayoutEffect(() => {
     navigation.setOptions({

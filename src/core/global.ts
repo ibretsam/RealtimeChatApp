@@ -36,6 +36,7 @@ type State = {
   messagesTyping: Date | null;
   messageUser: User | null;
   messageList: (connection: MessagePreview, page?: number) => void;
+  imagesList: string[] | null;
 };
 
 const useGlobal = create<State>((set, get) => ({
@@ -264,11 +265,19 @@ const useGlobal = create<State>((set, get) => ({
           if (!Array.isArray(data.messages)) {
             throw new Error('Invalid data format');
           }
-          set(state => ({
-            messagesList: [...get().messagesList!, ...messages],
-            messageNext: next,
-            messageUser: user,
-          }));
+          set((state: State) => {
+            const updatedImagesList = state.messagesList
+              ? state.messagesList
+                  .filter(message => message.image_url)
+                  .map(message => message.image_url!)
+              : [];
+            return {
+              messagesList: [...state.messagesList!, ...messages],
+              messageNext: next,
+              messageUser: user,
+              imagesList: updatedImagesList,
+            };
+          });
         },
         'message-send': (
           set: SetState,
@@ -463,6 +472,7 @@ const useGlobal = create<State>((set, get) => ({
       }),
     );
   },
+  imagesList: [],
 
   //------------------//
   //  Message Typing  //
