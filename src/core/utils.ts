@@ -42,4 +42,12 @@ const thumbnail = (url: string | undefined) => {
   return {uri: imageUri};
 };
 
-export {log, logError, thumbnail};
+const getImageUrlsAndIndex = (
+  currentImageUrl: string,
+  imagesList: (string | undefined)[],
+) => {
+  const imageIndex = imagesList.indexOf(currentImageUrl);
+  return {imagesList, imageIndex};
+};
+
+export {log, logError, thumbnail, getImageUrlsAndIndex};
