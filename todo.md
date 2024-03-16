@@ -11,7 +11,7 @@
 
  - [ ] Error Handling: Implement error messages for various scenarios:
 	
-	 - [ ] Login and registration: Display an error message when incorrect
+	 - [x] Login and registration: Display an error message when incorrect
        credentials are entered.
 	 - [ ] Internet connection: Notify the user when there is no internet
        connection.
