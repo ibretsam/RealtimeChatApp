@@ -20,7 +20,7 @@
  - [ ] Loading Indicators: Introduce loading spinners for data-heavy
        screens:
 	 - [x] Request Screen
-	 - [ ] Messages Screen
+	 - [x] Messages Screen
 	 - [ ] Profile Screen
 
 - [ ] Layout Modification: Transition to a tab-based layout with Contacts, Messages, and Profile tabs. The Request page should be accessible from the Contacts screen.
