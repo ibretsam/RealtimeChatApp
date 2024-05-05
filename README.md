@@ -1,79 +1,40 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Chat Application
 
-# Getting Started
+This is a simple chat application built with React Native. It allows users to send and receive messages in real-time. Users can also send images along with their messages.
 
->**Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/environment-setup) instructions till "Creating a new application" step, before proceeding.
+## Technologies Used
 
-## Step 1: Start the Metro Server
+- **State Management**: The application uses Zustand for global state management. Zustand is a small, fast and scaleable bearbones state-management solution. It has a simple and intuitive API that allows for a clear understanding of when and where state changes occur.
+- **Authentication**: The application uses JWT (JSON Web Tokens) for user authentication, along with react-native-encrypted-storage for secure storage of user credentials. JWT is a compact, URL-safe means of representing claims to be transferred between two parties. This library provides a simple, easy-to-use API for storing data securely.
+- **Real-time Features**: The chat functionality in the application is real-time, powered by WebSockets. This allows users to send and receive messages instantly without needing to refresh or reload the application.
 
-First, you will need to start **Metro**, the JavaScript _bundler_ that ships _with_ React Native.
+## Features
 
-To start Metro, run the following command from the _root_ of your React Native project:
+- Real-time messaging: Send and receive messages in real-time.
+- Image messaging: Send images along with your messages.
+- Image viewing: View images in full screen with the ability to swipe through all images sent in the chat.
+- Find users: Search for other users to chat with.
+- Send connect requests: Send connect requests to other users to start a chat.
+- Accept connect requests: Accept connect requests from other users to start a chat.
+- User authentication: Securely log in and log out of the application.
+- Secure storage: User credentials are securely stored on the device using react-native-encrypted-storage.
 
-```bash
-# using npm
-npm start
+## Project Structure
 
-# OR using Yarn
-yarn start
-```
+- `src/screens/Login.tsx`: This is the login screen where users can enter their credentials to log in.
+- `src/screens/Message.tsx`: This is the main chat screen where users can send and receive messages.
+- `src/components/MyMessageBubble.tsx`: This component represents a message bubble for messages sent by the current user. It includes the message text and optionally an image.
 
-## Step 2: Start your Application
+## How to Run
 
-Let Metro Bundler run in its _own_ terminal. Open a _new_ terminal from the _root_ of your React Native project. Run the following command to start your _Android_ or _iOS_ app:
+1. Clone the repository: `git clone https://github.com/yourusername/chat-app.git`
+2. Install the dependencies: `npm install`
+3. Start the application: `npm start`
 
-### For Android
+## Contributing
 
-```bash
-# using npm
-npm run android
+Contributions are welcome! Please feel free to submit a pull request.
 
-# OR using Yarn
-yarn android
-```
+## License
 
-### For iOS
-
-```bash
-# using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
-```
-
-If everything is set up _correctly_, you should see your new app running in your _Android Emulator_ or _iOS Simulator_ shortly provided you have set up your emulator/simulator correctly.
-
-This is one way to run your app — you can also run it directly from within Android Studio and Xcode respectively.
-
-## Step 3: Modifying your App
-
-Now that you have successfully run the app, let's modify it.
-
-1. Open `App.tsx` in your text editor of choice and edit some lines.
-2. For **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Developer Menu** (<kbd>Ctrl</kbd> + <kbd>M</kbd> (on Window and Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (on macOS)) to see your changes!
-
-   For **iOS**: Hit <kbd>Cmd ⌘</kbd> + <kbd>R</kbd> in your iOS Simulator to reload the app and see your changes!
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [Introduction to React Native](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you can't get this to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+This project is licensed under the MIT License.
