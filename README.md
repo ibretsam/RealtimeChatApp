@@ -27,7 +27,7 @@ This is a simple chat application built with React Native. It allows users to se
 
 ## How to Run
 
-1. Clone the repository: `git clone https://github.com/yourusername/chat-app.git`
+1. Clone the repository: `git clone https://github.com/ibretsam/RealtimeChatApp`
 2. Install the dependencies: `npm install`
 3. Start the application: `npm start`
 
