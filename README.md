@@ -1,6 +1,7 @@
 # Chat Application
 
 This is a simple chat application built with React Native. It allows users to send and receive messages in real-time. Users can also send images along with their messages.
+Checkout the code for the server (built with Django) here: https://github.com/ibretsam/RealtimeChatAPI
 
 ## Technologies Used
 
